@@ -17,6 +17,20 @@ using IClaimSetUptr = std::unique_ptr<IClaimSet>;
 using IHeaderSptr = std::shared_ptr<IHeader>;
 using IClaimSetSptr = std::shared_ptr<IClaimSet>;
 
+
+static EVP_PKEY * getEVPFromString()
+{
+  const char *pkey = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy9QkFIGxs8oXnuUKeIzT\nNJ3l1aFIfoUuIiRtLJ1XwmyPYHnLjC0yye3smMmctx6BcXTV9E0ebf8a0sENhSDm\nThjFM62baNka23Pzo6cSSSGbT2m1NQbARKa4dNP7zkWIPHa2tuK1/jRCy6Z/ARTd\nkPgYa4Xr0br/vL3QoZ/sy2ieeT2U4Xa03jAghU9VgFYkIp3hpI6aTaDmKG8Z5mVj\novBpW8Rg0vkkwZ3GhjhAJhr6qwMoTSgkQU/Xst0X8duO/HD7bH9NYpsySMiU4+lR\nsrCC0rhiCToT36kidynajEJI6uQoTQzsPtFM+Nz0Vd1+dZfJ1H+ZyIROyVXlCKhR\nCQIDAQAB\n-----END PUBLIC KEY-----\n";
+
+  BIO* bio = BIO_new_mem_buf(pkey, strlen(pkey));
+  if (!bio)
+  {
+    return NULL;
+  }
+
+  return PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);
+}
+
 static EVP_PKEY *generate_key()
 {
   EVP_PKEY *key = nullptr;
@@ -128,12 +142,55 @@ void test_sign_verify(void **)
   assert_true(jwt.verify(pub_key.get(), true));
 }
 
+void test_jwt_sign_verification(void **)
+{
+  JWTObject jwt;
+  
+  IHeaderSptr header(IHeader::buildHeader());
+  IClaimSetSptr claim_set(IClaimSet::buildClaimSet());
+  header->setAlgorithm(AlgorithmType::RS512);
+  header->setCustomHeaderEntry("ssd_iss", "dep1");
+  claim_set->addClaim("keyVer", 0.2);
+  claim_set->addClaim("pubKeyType", "RSA");
+  claim_set->addClaim("pubKey", "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzA/Ws3OvcV0uUN+2Q+wH\n4JLGwD/gabXz7OYyw49it1bgvUMlmKssxmaWYEQ3h/uGAtKn5pahKK3a/P3e8LrD\nfwl8On5WWgSlvF3WwbtXrJDT9UYTjjakjBxngooE9gh9BJdkb/kLUL0MulERsUf5\noGBPnWK4tyr3TXCTcBis9dnU09Q71QGAIgYe/eaXda2xqOUZLkAfewTQ2AqGL1SK\nlOl5Xpk9zsBgMseYuoEAe92w9YNn0g41wRukPvCt/z6/J9b26x/+DF2Du4PpeZeX\n1Qij5VgbHmiUut9QIiymV+bSC0+yKfe5Lwt8QR4oyuEVmbHe6bHUiVtWiahiU8sR\nJwIDAQAB\n-----END PUBLIC KEY-----\n");
+  
+  jwt.setHeader(header);
+  jwt.setClaimSet(claim_set);
+
+  std::unique_ptr<EVP_PKEY, std::function<void(EVP_PKEY *)>> key
+          {generate_key(), [](EVP_PKEY *k) { EVP_PKEY_free(k); }};
+
+  if (key == nullptr)
+  {
+    assert_true(false);
+    return;
+  }
+
+  std::unique_ptr<EVP_PKEY, std::function<void(EVP_PKEY *)>> pub_key
+          {extract_pub_key(key.get()), [](EVP_PKEY *k) { EVP_PKEY_free(k); }};
+
+  std::string result = jwt.serialize(key.get());
+
+  assert_string_not_equal(result.c_str(), "");
+
+  assert_true(jwt.verify(pub_key.get(), true));
+}
+
+void test_jwt_sign_verify_b64(void **)
+{
+  EVP_PKEY *pkey = getEVPFromString();
+  JWTObject jwt("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzUxMiIsInNzZF9pc3MiOiJkZXAxIn0.eyJrZXlWZXIiOiIwLjIiLCJwdWJLZXlUeXAiOiJSU0EiLCJwdWJLZXkiOiItLS0tLUJFR0lOIFBVQkxJQyBLRVktLS0tLVxuTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF6QS9XczNPdmNWMHVVTisyUSt3SFxuNEpMR3dEL2dhYlh6N09ZeXc0OWl0MWJndlVNbG1Lc3N4bWFXWUVRM2gvdUdBdEtuNXBhaEtLM2EvUDNlOExyRFxuZndsOE9uNVdXZ1NsdkYzV3didFhySkRUOVVZVGpqYWtqQnhuZ29vRTlnaDlCSmRrYi9rTFVMME11bEVSc1VmNVxub0dCUG5XSzR0eXIzVFhDVGNCaXM5ZG5VMDlRNzFRR0FJZ1llL2VhWGRhMnhxT1VaTGtBZmV3VFEyQXFHTDFTS1xubE9sNVhwazl6c0JnTXNlWXVvRUFlOTJ3OVlObjBnNDF3UnVrUHZDdC96Ni9KOWIyNngvK0RGMkR1NFBwZVplWFxuMVFpajVWZ2JIbWlVdXQ5UUlpeW1WK2JTQzAreUtmZTVMd3Q4UVI0b3l1RVZtYkhlNmJIVWlWdFdpYWhpVThzUlxuSndJREFRQUJcbi0tLS0tRU5EIFBVQkxJQyBLRVktLS0tLVxuIiwibmJmIjoxNTQ4OTI0NjMxfQ.g4ndRfk2_caUg-72dy8FQVy0h73CGnAG8vzvvSpMiaRXLiTblsvSHRxC32lqPRkcW93FrM8EAf63TxNWKHt9JUJJGbLm1nSROnZ4Ckdn0W6TaFEdyuhC-G1zhD4AAThx2LxqZ5Y_zfUKiPPbBCz4R4vVvp0e3nyYn0hdB1n0Cn3x3L3PTQCBstybS7vYacesn6H-CI6oSHGpfbiy8w2YNjdonDX2ligRTfDWi_AW7NfuL2-ZnscnYaRaoskk_ygU7mtHyVL0vTS8RdKzYebT8mqT6tNY2xg01BOY8GGMVzap2ZBJ1zGthO18MUAboj22jbXU_uhSy8bscJRwvOxqVA");
+  assert_true(jwt.verify(pkey, false));
+}
+
 int main()
 {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test(test_claim_set),
     cmocka_unit_test(test_header),
     cmocka_unit_test(test_sign_verify),
+    cmocka_unit_test(test_jwt_sign_verification),
+    cmocka_unit_test(test_jwt_sign_verify_b64),
   };
   return cmocka_run_group_tests(tests, nullptr, nullptr);
 }
