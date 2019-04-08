@@ -140,6 +140,18 @@ int CJWT_verify(CJWT cjwt_obj, EVP_PKEY *key)
     }
 }
 
+int CJWT_verify_token(CJWT cjwt_obj, EVP_PKEY *key)
+{
+  IJWT *ijwt_obj = static_cast<IJwt *>(cjwt_obj);
+  if (ijwt_obj->verify_token(key))
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
 void CJWT_setClaimset(CJWT cjwt_obj, CLAIMSET cjwt_cset_obj)
 {
     IClaimSet *cset_obj = NULL;

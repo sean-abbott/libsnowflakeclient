@@ -37,6 +37,7 @@ JWTObject::JWTObject(const std::string &input)
   size_t pos;
   std::string remain;
 
+  token_ = input;
   pos = input.find('.');
   if (pos == std::string::npos) throw JwtException("Fail to extract header");
   header = input.substr(0, pos);
@@ -51,21 +52,38 @@ JWTObject::JWTObject(const std::string &input)
   secret_ = remain.substr(pos + 1);
 }
 
-bool JWTObject::verify(EVP_PKEY *key, bool format)
+bool JWTObject::verify(EVP_PKEY *key)
 {
   std::unique_ptr<ISigner> signer{ISigner::buildSigner(header_->getAlgorithmType())};
   std::string msg;
 
   if (signer == nullptr) return false;
 
-  if (format)
-  {
-    msg = header_->serialize() + '.' + claim_set_->serialize();
-  }
-  else
-  {
-    msg = header_->serialize(false) + '.' + claim_set_->serialize(false);
-  }
+  msg = header_->serialize() + '.' + claim_set_->serialize();
+
+  return signer->verify(key, msg, secret_);
+}
+
+bool JWTObject::verify_token(EVP_PKEY *key)
+{
+  std::unique_ptr<ISigner> signer{ISigner::buildSigner(header_->getAlgorithmType())};
+  std::string msg = token_;
+  size_t pos;
+  std::string remain;
+
+  if (signer == nullptr) return false;
+
+  pos = msg.find('.');
+
+  if (pos == std::string::npos) throw JwtException("Failed to extract JWT Header");
+
+  remain = msg.substr(pos + 1);
+  pos = remain.find('.');
+
+  if (pos == std::string::npos) throw JwtException("Failed to extract JWT ClaimSet");
+
+  secret_ = remain.substr(pos + 1);
+
   return signer->verify(key, msg, secret_);
 }
 

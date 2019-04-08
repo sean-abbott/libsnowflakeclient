@@ -75,10 +75,18 @@ public:
    *       and the secret's value are properly set already unless the object is
    *       parsed from some serialized text
    * @param key
-   * @param format - whether to format msg while verifying signature
    * @return true if the verification pass
    */
-  bool verify(EVP_PKEY *key, bool format);
+  bool verify(EVP_PKEY *key);
+
+  /**
+   * Verify the string token that is part of the object
+   * directly rather than verifying the serialized
+   * ClaimSet and Header objects.
+   * @param key
+   * @return
+   */
+  bool verify_token(EVP_PKEY *key);
 
   /**
    * Serialize the JWT token to a string, the secret field would be set
@@ -91,6 +99,7 @@ private:
   HeaderPtr header_;
   ClaimSetPtr claim_set_;
   std::string secret_;
+  std::string token_;
 };
 
 } // namespace Jwt
