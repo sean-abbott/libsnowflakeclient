@@ -39,6 +39,7 @@ enum StageType
 {
   S3,
   AZURE,
+  GCS,
   LOCAL_FS,
 
   /// This is used to create MOCKED storage client and is for testing purpose
@@ -59,6 +60,8 @@ struct StageInfo
   std::string storageAccount; //Required by Azure
 
   std::string endPoint;       //Required by Azure
+
+  std::string presignedUrl;  //Required by GCS
 
   std::unordered_map<std::string, char *> credentials;
 };

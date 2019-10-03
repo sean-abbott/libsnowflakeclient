@@ -84,6 +84,8 @@ bool StatementPutGet::parsePutGetCommand(std::string *sql,
       };
     putGetParseResponse->stageInfo.endPoint = response->stage_info->endPoint;
 
+  } else if (sf_strncasecmp(response->stage_info->location_type, "GCS", 5) == 0) {
+      putGetParseResponse->stageInfo.presignedUrl = response->stage_info->presignedUrl;
   } else if (sf_strncasecmp(response->stage_info->location_type,
                             "local_fs", 8) == 0)
   {

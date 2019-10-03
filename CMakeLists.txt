@@ -24,6 +24,16 @@ else()
     set(MOCK_OBJECT_WRAPPER_FLAGS )
 endif ()
 
+execute_process (
+        COMMAND bash -c "cp ../tests/test_simple_put.cpp ../tests/test_simple_put_azure.cpp"
+        OUTPUT_VARIABLE outVar
+        )
+
+execute_process (
+        COMMAND bash -c "cp ../tests/test_simple_put.cpp ../tests/test_simple_put_gcs.cpp"
+        OUTPUT_VARIABLE outVar
+        )
+
 if (UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif ()
@@ -125,6 +135,8 @@ set (SOURCE_FILES_PUT_GET
         cpp/SnowflakeS3Client.cpp
         cpp/SnowflakeAzureClient.hpp
         cpp/SnowflakeAzureClient.cpp
+        cpp/SnowflakeGcsClient.hpp
+        cpp/SnowflakeGcsClient.cpp
         cpp/SnowflakeTransferException.cpp
         cpp/StatementPutGet.hpp
         cpp/StatementPutGet.cpp

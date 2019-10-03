@@ -6,6 +6,7 @@
 #include "StorageClientFactory.hpp"
 #include "SnowflakeS3Client.hpp"
 #include "SnowflakeAzureClient.hpp"
+#include "SnowflakeGcsClient.hpp"
 #include "logger/SFLogger.hpp"
 
 namespace Snowflake
@@ -29,6 +30,11 @@ IStorageClient * StorageClientFactory::getClient(
     case StageType::AZURE:
       CXX_LOG_INFO("Creating Azure client");
       return new SnowflakeAzureClient(stageInfo, parallel, transferConfig);
+#ifdef _GCS_PUT_GET_
+    case StageType::GCS:
+      CXX_LOG_INFO("Creating S3 client");
+      return new SnowflakeGcsClient(stageInfo, parallel, transferConfig);
+#endif
     default:
       // invalid stage type
       throw SnowflakeTransferException(TransferError::UNSUPPORTED_FEATURE,

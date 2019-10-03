@@ -76,6 +76,7 @@ typedef struct SF_STAGE_INFO {
   char *region;
   char *storageAccount; // For Azure only
   char *endPoint; //For Azure only.
+  char *presignedUrl; //For Google
   SF_STAGE_CRED * stage_cred;
 } SF_STAGE_INFO;
 

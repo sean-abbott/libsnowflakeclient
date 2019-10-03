@@ -15,9 +15,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/_init.sh $@
 
 cd $DIR/..
-#Symlink wont work on Appveyor Windows.
-rm -f tests/test_simple_put_azure.cpp
-cp -f tests/test_simple_put.cpp tests/test_simple_put_azure.cpp
 
 rm -rf cmake-build
 mkdir cmake-build

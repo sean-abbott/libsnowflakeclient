@@ -1839,6 +1839,8 @@ SF_STATUS STDCALL _snowflake_execute_ex(SF_STMT *sfstmt,
                                  stage_info, "storageAccount");
                 json_copy_string(&sfstmt->put_get_response->stage_info->endPoint,
                                  stage_info, "endPoint");
+                json_copy_string(&sfstmt->put_get_response->stage_info->presignedUrl,
+                                 stage_info, "presignedUrl");
                 json_copy_string(
                     &sfstmt->put_get_response->stage_info->stage_cred->aws_secret_key,
                     stage_cred, "AWS_SECRET_KEY");
