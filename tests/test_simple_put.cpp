@@ -3,6 +3,7 @@
  */
 
 #include <aws/core/Aws.h>
+#include <vector>
 #include <snowflake/client.h>
 #include "utils/test_setup.h"
 #include "utils/TestSetup.hpp"
@@ -20,7 +21,7 @@
 using namespace ::Snowflake::Client;
 
 //File list to be made available to re-upload.
-static char f1[256]={0}, f2[256]={0}, f3[256]={0}, f4[256]={0}, f5[256]={0};
+static std::vector<std::string> fileList;
 static bool createOnlyOnce = true;
 
 void test_simple_put_core(const char * fileName,
@@ -153,36 +154,18 @@ void test_simple_put_core(const char * fileName,
       assert_int_equal(SF_STATUS_SUCCESS, ret);
 
       //GS splits the file into multiple pieces.
-      std::string fileList="list @%test_small_put pattern='bigFile.*'";
-      ret = snowflake_query(sfstmt, fileList.c_str(), fileList.size());
+      std::string listFiles="list @%test_small_put pattern='bigFile.*'";
+      ret = snowflake_query(sfstmt, listFiles.c_str(), listFiles.size());
       assert_int_equal(SF_STATUS_SUCCESS, ret);
 
+      int nsplits = snowflake_num_rows(sfstmt);
       //Get the list of those pieces
-      ret = snowflake_fetch(sfstmt);
-      assert_int_equal(SF_STATUS_SUCCESS, ret);
-      snowflake_column_as_const_str(sfstmt, 1, &f);
-      sb_strncpy(f1, 256, f, strlen(f));
-
-      ret = snowflake_fetch(sfstmt);
-      assert_int_equal(SF_STATUS_SUCCESS, ret);
-      snowflake_column_as_const_str(sfstmt, 1, &f);
-      sb_strncpy(f2, 256, f, strlen(f));
-
-      ret = snowflake_fetch(sfstmt);
-      assert_int_equal(SF_STATUS_SUCCESS, ret);
-      snowflake_column_as_const_str(sfstmt, 1, &f);
-      sb_strncpy(f3, 256, f, strlen(f));
-
-      ret = snowflake_fetch(sfstmt);
-      assert_int_equal(SF_STATUS_SUCCESS, ret);
-      snowflake_column_as_const_str(sfstmt, 1, &f);
-      sb_strncpy(f4, 256, f, strlen(f));
-
-      ret = snowflake_fetch(sfstmt);
-      assert_int_equal(SF_STATUS_SUCCESS, ret);
-      snowflake_column_as_const_str(sfstmt, 1, &f);
-      sb_strncpy(f5, 256, f, strlen(f));
-
+      for(int i=0; i<nsplits; i++) {
+          ret = snowflake_fetch(sfstmt);
+          assert_int_equal(SF_STATUS_SUCCESS, ret);
+          snowflake_column_as_const_str(sfstmt, 1, &f);
+          fileList.emplace_back(f);
+      }
       ret = snowflake_fetch(sfstmt);
       assert_int_equal(SF_STATUS_EOF, ret);
 
@@ -255,6 +238,11 @@ void test_simple_get_data(const char *getCommand, const char *size)
 
 void test_large_put_auto_compress(void **unused)
 {
+    char *cenv = getenv("SNOWFLAKE_CLOUD_ENV");
+  if ( ! strncmp(cenv, "AWS", 6) ) {
+      errno = 0;
+      return;
+  }
   std::string destinationfile="large_file.csv.gz";
   std::string destFile = TestSetup::getDataDir() + destinationfile;
   test_simple_put_core(destinationfile.c_str(), // filename
@@ -268,6 +256,10 @@ void test_large_put_auto_compress(void **unused)
 
 void test_large_reupload(void **unused)
 {
+    if ( ! strncmp(getenv("SNOWFLAKE_CLOUD_ENV"), "AWS", 6) ) {
+        errno = 0;
+        return;
+    }
     //Before re-upload delete the already existing staged files.
     SF_STATUS status;
     SF_CONNECT *sf = setup_snowflake_connection();
@@ -289,60 +281,19 @@ void test_large_reupload(void **unused)
     char tempFile[MAX_PATH + 256] ={0};
     sf_get_tmp_dir(tempDir);
 
-    sprintf(tempFile, "%s%c%s", tempDir, PATH_SEP, f1);
-    test_simple_put_core(tempFile, // filename
-                         "gzip", //source compression
-                         false,   // auto compress
-                         true,   // Load data into table
-                         false,  // Run select * on loaded table (Not good for large data set)
-                         false,    // copy data from Table to Staging.
-                         true       //Creates a dup table to compare uploaded data.
-    );
+    for(const std::string s : fileList) {
+        tempFile[0] = 0;
+        sprintf(tempFile, "%s%c%s", tempDir, PATH_SEP, s.c_str());
+        test_simple_put_core(tempFile, // filename
+                             "gzip", //source compression
+                             false,   // auto compress
+                             true,   // Load data into table
+                             false,  // Run select * on loaded table (Not good for large data set)
+                             false,    // copy data from Table to Staging.
+                             true       //Creates a dup table to compare uploaded data.
+        );
+    }
 
-    tempFile[0] = 0;
-    sprintf(tempFile, "%s%c%s", tempDir, PATH_SEP, f2);
-    test_simple_put_core(tempFile, // filename
-                         "gzip", //source compression
-                         false,   // auto compress
-                         true,   // Load data into table
-                         false,  // Run select * on loaded table (Not good for large data set)
-                         false,    // copy data from Table to Staging.
-                         true       //Creates a dup table to compare uploaded data.
-    );
-
-    tempFile[0] = 0;
-    sprintf(tempFile, "%s%c%s", tempDir, PATH_SEP, f3);
-    test_simple_put_core(tempFile, // filename
-                         "gzip", //source compression
-                         false,   // auto compress
-                         true,   // Load data into table
-                         false,  // Run select * on loaded table (Not good for large data set)
-                         false,    // copy data from Table to Staging.
-                         true       //Creates a dup table to compare uploaded data.
-    );
-
-    tempFile[0] = 0;
-    sprintf(tempFile, "%s%c%s", tempDir, PATH_SEP, f4);
-    test_simple_put_core(tempFile, // filename
-                         "gzip", //source compression
-                         false,   // auto compress
-                         true,   // Load data into table
-                         false,  // Run select * on loaded table (Not good for large data set)
-                         false,    // copy data from Table to Staging.
-                         true       //Creates a dup table to compare uploaded data.
-    );
-
-
-    tempFile[0] = 0;
-    sprintf(tempFile, "%s%c%s", tempDir, PATH_SEP, f5);
-    test_simple_put_core(tempFile, // filename
-                         "gzip", //source compression
-                         false,   // auto compress
-                         true,   // Load data into table
-                         false,  // Run select * on loaded table (Not good for large data set)
-                         false,    // copy data from Table to Staging.
-                         true       //Creates a dup table to compare uploaded data.
-    );
 }
 
 /*
@@ -358,6 +309,10 @@ void test_large_reupload(void **unused)
  */
 void test_verify_upload(void **unused)
 {
+    if ( ! strncmp(getenv("SNOWFLAKE_CLOUD_ENV"), "AWS", 6) ) {
+        errno = 0;
+        return;
+    }
     /* init */
     SF_STATUS status;
     SF_CONNECT *sf = setup_snowflake_connection();
@@ -438,6 +393,10 @@ void test_large_get(void **unused)
 {
   char tempDir[MAX_PATH] = { 0 };
   char tempPath[MAX_PATH + 256] = "get @%test_small_put/bigFile.csv.gz file://";
+    if ( ! strncmp(getenv("SNOWFLAKE_CLOUD_ENV"), "AWS", 6) ) {
+        errno = 0;
+        return;
+    }
   sf_get_tmp_dir(tempDir);
   strcat(tempPath, tempDir);
   test_simple_get_data(tempPath, "5166848");
