@@ -55,7 +55,7 @@ add_library(aws-cpp-sdk-s3 STATIC IMPORTED)
 
 set_target_properties(aws-cpp-sdk-s3 PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "aws-cpp-sdk-core"
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:pthread>;\$<LINK_ONLY:aws-cpp-sdk-core>"
 )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)

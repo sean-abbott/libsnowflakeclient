@@ -103,10 +103,10 @@ static char* encodeOCSPRequestToBase64(OCSP_REQUEST *reqp, struct Curl_easy *dat
 static char* encodeOCSPResponseToBase64(OCSP_RESPONSE* resp, struct Curl_easy *data);
 static OCSP_CERTID* decodeOCSPCertIDFromBase64(char* src, struct Curl_easy *data);
 static OCSP_RESPONSE* decodeOCSPResponseFromBase64(char* src, struct Curl_easy *data);
-static OCSP_RESPONSE* extractOCSPRespFromValue(cJSON *cache_value, struct Curl_easy *data);
-static cJSON *getCacheEntry(OCSP_CERTID* certid, struct Curl_easy *data);
+static OCSP_RESPONSE* extractOCSPRespFromValue(snowflake_libcurl_cJSON *cache_value, struct Curl_easy *data);
+static snowflake_libcurl_cJSON *getCacheEntry(OCSP_CERTID* certid, struct Curl_easy *data);
 static void deleteCacheEntry(OCSP_CERTID* certid, struct Curl_easy *data);
-static void updateCacheWithBulkEntries(cJSON* tmp_cache, struct Curl_easy *data);
+static void updateCacheWithBulkEntries(snowflake_libcurl_cJSON* tmp_cache, struct Curl_easy *data);
 
 static void termCertOCSP();
 
@@ -116,7 +116,7 @@ static int _mutex_unlock(SF_MUTEX_HANDLE *lock);
 static int _mutex_term(SF_MUTEX_HANDLE *lock);
 
 /* in memory response cache */
-static cJSON * ocsp_cache_root = NULL;
+static snowflake_libcurl_cJSON * ocsp_cache_root = NULL;
 
 /* mutex for ocsp_cache_root */
 static SF_MUTEX_HANDLE ocsp_response_cache_mutex;
@@ -487,8 +487,8 @@ void updateOCSPResponseInMem(OCSP_CERTID *certid, OCSP_RESPONSE *resp,
 
   unsigned long unix_time;
 
-  cJSON * cache_val_array = NULL;
-  cJSON *found = NULL;
+  snowflake_libcurl_cJSON * cache_val_array = NULL;
+  snowflake_libcurl_cJSON *found = NULL;
 
   /* encode OCSP CertID and OCSP Response */
   cert_id_encode = encodeOCSPCertIDToBase64(certid, data);
@@ -506,22 +506,22 @@ void updateOCSPResponseInMem(OCSP_CERTID *certid, OCSP_RESPONSE *resp,
   unix_time = (unsigned long)time(NULL);
 
   /* write to mem cache */
-  cache_val_array = cJSON_CreateArray();
-  cJSON_AddItemToArray(cache_val_array, cJSON_CreateNumber((double) unix_time));
-  cJSON_AddItemToArray(cache_val_array, cJSON_CreateString(ocsp_response_encode));
+  cache_val_array = snowflake_libcurl_cJSON_CreateArray();
+  snowflake_libcurl_cJSON_AddItemToArray(cache_val_array, snowflake_libcurl_cJSON_CreateNumber((double) unix_time));
+  snowflake_libcurl_cJSON_AddItemToArray(cache_val_array, snowflake_libcurl_cJSON_CreateString(ocsp_response_encode));
 
   _mutex_lock(&ocsp_response_cache_mutex);
   if (ocsp_cache_root == NULL)
   {
-    ocsp_cache_root = cJSON_CreateObject();
+    ocsp_cache_root = snowflake_libcurl_cJSON_CreateObject();
   }
   found = getCacheEntry(certid, data);
   if (found != NULL)
   {
     /* delete existing entry first if exists. */
-    cJSON_DeleteItemFromObject(ocsp_cache_root, found->string);
+    snowflake_libcurl_cJSON_DeleteItemFromObject(ocsp_cache_root, found->string);
   }
-  cJSON_AddItemToObject(ocsp_cache_root, cert_id_encode, cache_val_array);
+  snowflake_libcurl_cJSON_AddItemToObject(ocsp_cache_root, cert_id_encode, cache_val_array);
   _mutex_unlock(&ocsp_response_cache_mutex);
 end:
   if (cert_id_encode) curl_free(cert_id_encode);
@@ -724,24 +724,24 @@ OCSP_RESPONSE * decodeOCSPResponseFromBase64(char* src, struct Curl_easy *data)
  * @param data curl handle
  * @return OCSP_RESPONSE
  */
-OCSP_RESPONSE* extractOCSPRespFromValue(cJSON *cache_value, struct Curl_easy *data)
+OCSP_RESPONSE* extractOCSPRespFromValue(snowflake_libcurl_cJSON *cache_value, struct Curl_easy *data)
 {
   long last_query_time_l = 0L;
-  cJSON * resp_bas64_j = NULL;
-  cJSON * last_query_time = NULL;
+  snowflake_libcurl_cJSON * resp_bas64_j = NULL;
+  snowflake_libcurl_cJSON * last_query_time = NULL;
 
-  if (cache_value == NULL || !cJSON_IsArray(cache_value))
+  if (cache_value == NULL || !snowflake_libcurl_cJSON_IsArray(cache_value))
   {
     infof(data, "OCSP Cache value is invalid\n");
     return NULL;
   }
 
   /* First item is the timestamp when the cache entry was created. */
-  last_query_time = cJSON_GetArrayItem(cache_value, 0);
-  if (!cJSON_IsNumber(last_query_time))
+  last_query_time = snowflake_libcurl_cJSON_GetArrayItem(cache_value, 0);
+  if (!snowflake_libcurl_cJSON_IsNumber(last_query_time))
   {
     infof(data, "OCSP Cache Last query time is invalid\n");
-    cJSON_DeleteItemFromObjectCaseSensitive(ocsp_cache_root,
+    snowflake_libcurl_cJSON_DeleteItemFromObjectCaseSensitive(ocsp_cache_root,
                                             cache_value->string);
     return NULL;
   }
@@ -756,11 +756,11 @@ OCSP_RESPONSE* extractOCSPRespFromValue(cJSON *cache_value, struct Curl_easy *da
   }
 
   /* Second item is the actual OCSP response data */
-  resp_bas64_j = cJSON_GetArrayItem(cache_value, 1);
-  if (!cJSON_IsString(resp_bas64_j) || resp_bas64_j->valuestring == NULL)
+  resp_bas64_j = snowflake_libcurl_cJSON_GetArrayItem(cache_value, 1);
+  if (!snowflake_libcurl_cJSON_IsString(resp_bas64_j) || resp_bas64_j->valuestring == NULL)
   {
     infof(data, "OCSP Response cache is invalid. Deleting it from the cache.\n");
-    cJSON_DeleteItemFromObjectCaseSensitive(ocsp_cache_root,
+    snowflake_libcurl_cJSON_DeleteItemFromObjectCaseSensitive(ocsp_cache_root,
                                             cache_value->string);
     return NULL;
   }
@@ -779,7 +779,7 @@ OCSP_RESPONSE * findOCSPRespInMem(OCSP_CERTID *certid, struct Curl_easy *data)
 {
   /* calculate certid */
   OCSP_RESPONSE *resp = NULL;
-  cJSON *found = NULL;
+  snowflake_libcurl_cJSON *found = NULL;
 
   _mutex_lock(&ocsp_response_cache_mutex);
   found = getCacheEntry(certid, data);
@@ -805,19 +805,19 @@ end:
  *
  * @param certid OCSP CertID
  * @param data curl handle
- * @return cJSON cache entry if found otherwise NULL
+ * @return snowflake_libcurl_cJSON cache entry if found otherwise NULL
  */
-cJSON *getCacheEntry(OCSP_CERTID* certid, struct Curl_easy *data)
+snowflake_libcurl_cJSON *getCacheEntry(OCSP_CERTID* certid, struct Curl_easy *data)
 {
-  cJSON *ret = NULL;
-  cJSON *element_pointer = NULL;
+  snowflake_libcurl_cJSON *ret = NULL;
+  snowflake_libcurl_cJSON *element_pointer = NULL;
 
   if (ocsp_cache_root == NULL)
   {
-    ocsp_cache_root = cJSON_CreateObject();
+    ocsp_cache_root = snowflake_libcurl_cJSON_CreateObject();
   }
 
-  cJSON_ArrayForEach(element_pointer, ocsp_cache_root)
+  snowflake_libcurl_cJSON_ArrayForEach(element_pointer, ocsp_cache_root)
   {
     int cmp = 0;
     OCSP_CERTID *target_certid = decodeOCSPCertIDFromBase64(
@@ -846,30 +846,30 @@ cJSON *getCacheEntry(OCSP_CERTID* certid, struct Curl_easy *data)
  */
 void deleteCacheEntry(OCSP_CERTID* certid, struct Curl_easy *data)
 {
-  cJSON *found = NULL;
+  snowflake_libcurl_cJSON *found = NULL;
 
   _mutex_lock(&ocsp_response_cache_mutex);
   found = getCacheEntry(certid, data);
   if (found)
   {
-    cJSON_DeleteItemFromObject(ocsp_cache_root, found->string);
+    snowflake_libcurl_cJSON_DeleteItemFromObject(ocsp_cache_root, found->string);
   }
   _mutex_unlock(&ocsp_response_cache_mutex);
 }
 
 /**
- * Update OCSP cache with the cJSON data
- * @param tmp_cache a cJSON data
+ * Update OCSP cache with the snowflake_libcurl_cJSON data
+ * @param tmp_cache a snowflake_libcurl_cJSON data
  * @param data curl handle
  */
-void updateCacheWithBulkEntries(cJSON* tmp_cache, struct Curl_easy *data)
+void updateCacheWithBulkEntries(snowflake_libcurl_cJSON* tmp_cache, struct Curl_easy *data)
 {
-  cJSON *element_pointer = NULL;
-  cJSON *found = NULL;
-  cJSON *new_value = NULL;
+  snowflake_libcurl_cJSON *element_pointer = NULL;
+  snowflake_libcurl_cJSON *found = NULL;
+  snowflake_libcurl_cJSON *new_value = NULL;
 
   /* Detect the existing elements */
-  cJSON_ArrayForEach(element_pointer, tmp_cache)
+  snowflake_libcurl_cJSON_ArrayForEach(element_pointer, tmp_cache)
   {
     OCSP_CERTID *cert_id = decodeOCSPCertIDFromBase64(
       element_pointer->string, data);
@@ -880,12 +880,12 @@ void updateCacheWithBulkEntries(cJSON* tmp_cache, struct Curl_easy *data)
     }
     found = getCacheEntry(cert_id, data);
     OCSP_CERTID_free(cert_id);
-    new_value = cJSON_Duplicate(element_pointer, 1);
+    new_value = snowflake_libcurl_cJSON_Duplicate(element_pointer, 1);
     if (found != NULL)
     {
-      cJSON_DeleteItemFromObject(ocsp_cache_root, found->string);
+      snowflake_libcurl_cJSON_DeleteItemFromObject(ocsp_cache_root, found->string);
     }
-    cJSON_AddItemToObject(ocsp_cache_root, element_pointer->string, new_value);
+    snowflake_libcurl_cJSON_AddItemToObject(ocsp_cache_root, element_pointer->string, new_value);
   }
 }
 
@@ -899,7 +899,7 @@ void downloadOCSPCache(struct Curl_easy *data)
   struct curl_memory_write ocsp_response_cache_json_mem;
   CURL *curlh = NULL;
   struct curl_slist *headers = NULL;
-  cJSON *tmp_cache = NULL;
+  snowflake_libcurl_cJSON *tmp_cache = NULL;
   CURLcode res = CURLE_OK;
 #ifdef _WIN32
   long sleep_time = START_SLEEP_TIME;
@@ -984,18 +984,18 @@ void downloadOCSPCache(struct Curl_easy *data)
   _mutex_lock(&ocsp_response_cache_mutex);
   if (ocsp_cache_root == NULL)
   {
-    ocsp_cache_root = cJSON_CreateObject();
+    ocsp_cache_root = snowflake_libcurl_cJSON_CreateObject();
   }
-  tmp_cache = cJSON_Parse(ocsp_response_cache_json_mem.memory_ptr);
+  tmp_cache = snowflake_libcurl_cJSON_Parse(ocsp_response_cache_json_mem.memory_ptr);
 
   /* update OCSP cache with the downloaded cache */
   updateCacheWithBulkEntries(tmp_cache, data);
   infof(data, "Number of cache entries: %d\n",
-        cJSON_GetArraySize(ocsp_cache_root));
+        snowflake_libcurl_cJSON_GetArraySize(ocsp_cache_root));
 
   _mutex_unlock(&ocsp_response_cache_mutex);
 end:
-  if (tmp_cache) cJSON_Delete(tmp_cache);
+  if (tmp_cache) snowflake_libcurl_cJSON_Delete(tmp_cache);
   if (curlh) curl_easy_cleanup(curlh);
   if (headers) curl_slist_free_all(headers);
 
@@ -1369,7 +1369,7 @@ void writeOCSPCacheFile(struct Curl_easy* data)
     infof(data, "Failed to open OCSP response cache file. Skipping writing OCSP cache file.\n");
     goto end;
   }
-  jsonText = cJSON_PrintUnformatted(ocsp_cache_root);
+  jsonText = snowflake_libcurl_cJSON_PrintUnformatted(ocsp_cache_root);
   if (fprintf(fp, "%s", jsonText) < 0)
   {
     infof(data, "Failed to write OCSP response cache file. Skipping\n");
@@ -1382,7 +1382,7 @@ void writeOCSPCacheFile(struct Curl_easy* data)
   infof(data, "Write OCSP Response to cache file\n");
 
   /* deallocate json string */
-  cJSON_free(jsonText);
+  snowflake_libcurl_cJSON_free(jsonText);
 
   if (remove(cache_lock_file) != 0)
   {
@@ -1391,7 +1391,7 @@ void writeOCSPCacheFile(struct Curl_easy* data)
 end:
   if (ocsp_cache_root != NULL)
   {
-    cJSON_Delete(ocsp_cache_root);
+    snowflake_libcurl_cJSON_Delete(ocsp_cache_root);
     ocsp_cache_root = NULL;
   }
   _mutex_unlock(&ocsp_response_cache_mutex);
@@ -1440,7 +1440,7 @@ void readOCSPCacheFile(struct Curl_easy* data)
     goto file_close;
   }
   /* just attached the whole JSON object */
-  ocsp_cache_root = cJSON_Parse(ocsp_resp_cache_str);
+  ocsp_cache_root = snowflake_libcurl_cJSON_Parse(ocsp_resp_cache_str);
   if (ocsp_cache_root == NULL)
   {
     infof(data, "Failed to parse cache file content in json format\n");
@@ -1456,7 +1456,7 @@ file_close:
     goto end;
   }
 end:
-  if (ocsp_cache_root == NULL) ocsp_cache_root = cJSON_CreateObject();
+  if (ocsp_cache_root == NULL) ocsp_cache_root = snowflake_libcurl_cJSON_CreateObject();
   _mutex_unlock(&ocsp_response_cache_mutex);
   return;
 }

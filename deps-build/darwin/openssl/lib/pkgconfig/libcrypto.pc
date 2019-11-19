@@ -1,4 +1,4 @@
-prefix=/Users/jenkinsadmin/Documents/GitHub/libsnowflakeclient/scripts/../deps-build/darwin/openssl
+prefix=/Users/kwagner/libsnowflakeclient/scripts/../deps-build/darwin/openssl
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

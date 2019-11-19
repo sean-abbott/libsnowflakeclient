@@ -12,7 +12,7 @@ set -o pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/_init.sh
-AWS_SOURCE_DIR=$DEPS_DIR/aws-sdk-cpp-1.3.50/
+AWS_SOURCE_DIR=$DEPS_DIR/aws-sdk-cpp-1.6.53/
 AWS_CMAKE_BUILD_DIR=$AWS_SOURCE_DIR/cmake-build
 AWS_BUILD_DIR=$DEPENDENCY_DIR/aws
 

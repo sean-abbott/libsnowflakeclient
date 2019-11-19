@@ -48,6 +48,8 @@ curl_configure_opts+=(
     "--disable-dict"
     "--disable-file"
     "--disable-manual"
+    "--without-brotli"
+    "--without-librtmp"
 )
 cd $LIBCURL_SOURCE_DIR
 echo "Building Curl with OpenSSL"

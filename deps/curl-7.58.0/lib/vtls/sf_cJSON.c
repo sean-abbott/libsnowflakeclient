@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2009-2017 Dave Gamble and cJSON contributors
+  Copyright (c) 2009-2017 Dave Gamble and snowflake_libcurl_cJSON contributors
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
   THE SOFTWARE.
 */
 
-/* cJSON */
+/* snowflake_libcurl_cJSON */
 /* JSON parser in C. */
 
 /* disable warnings about old C89 functions in MSVC */
@@ -63,8 +63,8 @@
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 
 /* define our own boolean type */
-#define true ((cJSON_bool)1)
-#define false ((cJSON_bool)0)
+#define true ((snowflake_libcurl_cJSON_bool)1)
+#define false ((snowflake_libcurl_cJSON_bool)0)
 
 typedef struct {
     const unsigned char *json;
@@ -72,13 +72,13 @@ typedef struct {
 } error;
 static error global_error = { NULL, 0 };
 
-CJSON_PUBLIC(const char *) cJSON_GetErrorPtr(void)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(const char *) snowflake_libcurl_cJSON_GetErrorPtr(void)
 {
     return (const char*) (global_error.json + global_error.position);
 }
 
-CJSON_PUBLIC(char *) cJSON_GetStringValue(cJSON *item) {
-    if (!cJSON_IsString(item)) {
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(char *) snowflake_libcurl_cJSON_GetStringValue(snowflake_libcurl_cJSON *item) {
+    if (!snowflake_libcurl_cJSON_IsString(item)) {
         return NULL;
     }
 
@@ -86,14 +86,14 @@ CJSON_PUBLIC(char *) cJSON_GetStringValue(cJSON *item) {
 }
 
 /* This is a safeguard to prevent copy-pasters from using incompatible C and header files */
-#if (CJSON_VERSION_MAJOR != 1) || (CJSON_VERSION_MINOR != 7) || (CJSON_VERSION_PATCH != 4)
-    #error cJSON.h and cJSON.c have different versions. Make sure that both have the same.
+#if (SNOWFLAKE_LIBCURL_CJSON_VERSION_MAJOR != 1) || (SNOWFLAKE_LIBCURL_CJSON_VERSION_MINOR != 7) || (SNOWFLAKE_LIBCURL_CJSON_VERSION_PATCH != 4)
+    #error snowflake_libcurl_cJSON.h and snowflake_libcurl_cJSON.c have different versions. Make sure that both have the same.
 #endif
 
-CJSON_PUBLIC(const char*) cJSON_Version(void)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(const char*) snowflake_libcurl_cJSON_Version(void)
 {
     static char version[15];
-    sprintf(version, "%i.%i.%i", CJSON_VERSION_MAJOR, CJSON_VERSION_MINOR, CJSON_VERSION_PATCH);
+    sprintf(version, "%i.%i.%i", SNOWFLAKE_LIBCURL_CJSON_VERSION_MAJOR, SNOWFLAKE_LIBCURL_CJSON_VERSION_MINOR, SNOWFLAKE_LIBCURL_CJSON_VERSION_PATCH);
 
     return version;
 }
@@ -151,7 +151,7 @@ static void *internal_realloc(void *pointer, size_t size)
 
 static internal_hooks global_hooks = { internal_malloc, internal_free, internal_realloc };
 
-static unsigned char* cJSON_strdup(const unsigned char* string, const internal_hooks * const hooks)
+static unsigned char* snowflake_libcurl_cJSON_strdup(const unsigned char* string, const internal_hooks * const hooks)
 {
     size_t length = 0;
     unsigned char *copy = NULL;
@@ -172,7 +172,7 @@ static unsigned char* cJSON_strdup(const unsigned char* string, const internal_h
     return copy;
 }
 
-CJSON_PUBLIC(void) cJSON_InitHooks(cJSON_Hooks* hooks)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_InitHooks(snowflake_libcurl_cJSON_Hooks* hooks)
 {
     if (hooks == NULL)
     {
@@ -204,33 +204,33 @@ CJSON_PUBLIC(void) cJSON_InitHooks(cJSON_Hooks* hooks)
 }
 
 /* Internal constructor. */
-static cJSON *cJSON_New_Item(const internal_hooks * const hooks)
+static snowflake_libcurl_cJSON *snowflake_libcurl_cJSON_New_Item(const internal_hooks * const hooks)
 {
-    cJSON* node = (cJSON*)hooks->allocate(sizeof(cJSON));
+    snowflake_libcurl_cJSON* node = (snowflake_libcurl_cJSON*)hooks->allocate(sizeof(snowflake_libcurl_cJSON));
     if (node)
     {
-        memset(node, '\0', sizeof(cJSON));
+        memset(node, '\0', sizeof(snowflake_libcurl_cJSON));
     }
 
     return node;
 }
 
-/* Delete a cJSON structure. */
-CJSON_PUBLIC(void) cJSON_Delete(cJSON *item)
+/* Delete a snowflake_libcurl_cJSON structure. */
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_Delete(snowflake_libcurl_cJSON *item)
 {
-    cJSON *next = NULL;
+    snowflake_libcurl_cJSON *next = NULL;
     while (item != NULL)
     {
         next = item->next;
-        if (!(item->type & cJSON_IsReference) && (item->child != NULL))
+        if (!(item->type & snowflake_libcurl_cJSON_IsReference) && (item->child != NULL))
         {
-            cJSON_Delete(item->child);
+            snowflake_libcurl_cJSON_Delete(item->child);
         }
-        if (!(item->type & cJSON_IsReference) && (item->valuestring != NULL))
+        if (!(item->type & snowflake_libcurl_cJSON_IsReference) && (item->valuestring != NULL))
         {
             global_hooks.deallocate(item->valuestring);
         }
-        if (!(item->type & cJSON_StringIsConst) && (item->string != NULL))
+        if (!(item->type & snowflake_libcurl_cJSON_StringIsConst) && (item->string != NULL))
         {
             global_hooks.deallocate(item->string);
         }
@@ -268,7 +268,7 @@ typedef struct
 #define buffer_at_offset(buffer) ((buffer)->content + (buffer)->offset)
 
 /* Parse the input text to generate a number, and populate the result into item. */
-static cJSON_bool parse_number(cJSON * const item, parse_buffer * const input_buffer)
+static snowflake_libcurl_cJSON_bool parse_number(snowflake_libcurl_cJSON * const item, parse_buffer * const input_buffer)
 {
     double number = 0;
     unsigned char *after_end = NULL;
@@ -338,14 +338,14 @@ loop_end:
         item->valueint = (int)number;
     }
 
-    item->type = cJSON_Number;
+    item->type = snowflake_libcurl_cJSON_Number;
 
     input_buffer->offset += (size_t)(after_end - number_c_string);
     return true;
 }
 
-/* don't ask me, but the original cJSON_SetNumberValue returns an integer or double */
-CJSON_PUBLIC(double) cJSON_SetNumberHelper(cJSON *object, double number)
+/* don't ask me, but the original snowflake_libcurl_cJSON_SetNumberValue returns an integer or double */
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(double) snowflake_libcurl_cJSON_SetNumberHelper(snowflake_libcurl_cJSON *object, double number)
 {
     if (number >= INT_MAX)
     {
@@ -369,8 +369,8 @@ typedef struct
     size_t length;
     size_t offset;
     size_t depth; /* current nesting depth (for formatted printing) */
-    cJSON_bool noalloc;
-    cJSON_bool format; /* is this print a formatted print */
+    snowflake_libcurl_cJSON_bool noalloc;
+    snowflake_libcurl_cJSON_bool format; /* is this print a formatted print */
     internal_hooks hooks;
 } printbuffer;
 
@@ -476,7 +476,7 @@ static void update_offset(printbuffer * const buffer)
 }
 
 /* Render the number nicely from the given item into a string. */
-static cJSON_bool print_number(const cJSON * const item, printbuffer * const output_buffer)
+static snowflake_libcurl_cJSON_bool print_number(const snowflake_libcurl_cJSON * const item, printbuffer * const output_buffer)
 {
     unsigned char *output_pointer = NULL;
     double d = item->valuedouble;
@@ -700,7 +700,7 @@ fail:
 }
 
 /* Parse the input text into an unescaped cinput, and populate item. */
-static cJSON_bool parse_string(cJSON * const item, parse_buffer * const input_buffer)
+static snowflake_libcurl_cJSON_bool parse_string(snowflake_libcurl_cJSON * const item, parse_buffer * const input_buffer)
 {
     const unsigned char *input_pointer = buffer_at_offset(input_buffer) + 1;
     const unsigned char *input_end = buffer_at_offset(input_buffer) + 1;
@@ -806,7 +806,7 @@ static cJSON_bool parse_string(cJSON * const item, parse_buffer * const input_bu
     /* zero terminate the output */
     *output_pointer = '\0';
 
-    item->type = cJSON_String;
+    item->type = snowflake_libcurl_cJSON_String;
     item->valuestring = (char*)output;
 
     input_buffer->offset = (size_t) (input_end - input_buffer->content);
@@ -829,7 +829,7 @@ fail:
 }
 
 /* Render the cstring provided to an escaped version that can be printed. */
-static cJSON_bool print_string_ptr(const unsigned char * const input, printbuffer * const output_buffer)
+static snowflake_libcurl_cJSON_bool print_string_ptr(const unsigned char * const input, printbuffer * const output_buffer)
 {
     const unsigned char *input_pointer = NULL;
     unsigned char *output = NULL;
@@ -951,18 +951,18 @@ static cJSON_bool print_string_ptr(const unsigned char * const input, printbuffe
 }
 
 /* Invoke print_string_ptr (which is useful) on an item. */
-static cJSON_bool print_string(const cJSON * const item, printbuffer * const p)
+static snowflake_libcurl_cJSON_bool print_string(const snowflake_libcurl_cJSON * const item, printbuffer * const p)
 {
     return print_string_ptr((unsigned char*)item->valuestring, p);
 }
 
 /* Predeclare these prototypes. */
-static cJSON_bool parse_value(cJSON * const item, parse_buffer * const input_buffer);
-static cJSON_bool print_value(const cJSON * const item, printbuffer * const output_buffer);
-static cJSON_bool parse_array(cJSON * const item, parse_buffer * const input_buffer);
-static cJSON_bool print_array(const cJSON * const item, printbuffer * const output_buffer);
-static cJSON_bool parse_object(cJSON * const item, parse_buffer * const input_buffer);
-static cJSON_bool print_object(const cJSON * const item, printbuffer * const output_buffer);
+static snowflake_libcurl_cJSON_bool parse_value(snowflake_libcurl_cJSON * const item, parse_buffer * const input_buffer);
+static snowflake_libcurl_cJSON_bool print_value(const snowflake_libcurl_cJSON * const item, printbuffer * const output_buffer);
+static snowflake_libcurl_cJSON_bool parse_array(snowflake_libcurl_cJSON * const item, parse_buffer * const input_buffer);
+static snowflake_libcurl_cJSON_bool print_array(const snowflake_libcurl_cJSON * const item, printbuffer * const output_buffer);
+static snowflake_libcurl_cJSON_bool parse_object(snowflake_libcurl_cJSON * const item, parse_buffer * const input_buffer);
+static snowflake_libcurl_cJSON_bool print_object(const snowflake_libcurl_cJSON * const item, printbuffer * const output_buffer);
 
 /* Utility to jump whitespace and cr/lf */
 static parse_buffer *buffer_skip_whitespace(parse_buffer * const buffer)
@@ -1002,10 +1002,10 @@ static parse_buffer *skip_utf8_bom(parse_buffer * const buffer)
 }
 
 /* Parse an object - create a new root, and populate. */
-CJSON_PUBLIC(cJSON *) cJSON_ParseWithOpts(const char *value, const char **return_parse_end, cJSON_bool require_null_terminated)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_ParseWithOpts(const char *value, const char **return_parse_end, snowflake_libcurl_cJSON_bool require_null_terminated)
 {
     parse_buffer buffer = { 0, 0, 0, 0, { 0, 0, 0 } };
-    cJSON *item = NULL;
+    snowflake_libcurl_cJSON *item = NULL;
 
     /* reset error position */
     global_error.json = NULL;
@@ -1021,7 +1021,7 @@ CJSON_PUBLIC(cJSON *) cJSON_ParseWithOpts(const char *value, const char **return
     buffer.offset = 0;
     buffer.hooks = global_hooks;
 
-    item = cJSON_New_Item(&global_hooks);
+    item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if (item == NULL) /* memory fail */
     {
         goto fail;
@@ -1052,7 +1052,7 @@ CJSON_PUBLIC(cJSON *) cJSON_ParseWithOpts(const char *value, const char **return
 fail:
     if (item != NULL)
     {
-        cJSON_Delete(item);
+        snowflake_libcurl_cJSON_Delete(item);
     }
 
     if (value != NULL)
@@ -1081,15 +1081,15 @@ fail:
     return NULL;
 }
 
-/* Default options for cJSON_Parse */
-CJSON_PUBLIC(cJSON *) cJSON_Parse(const char *value)
+/* Default options for snowflake_libcurl_cJSON_Parse */
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_Parse(const char *value)
 {
-    return cJSON_ParseWithOpts(value, 0, 0);
+    return snowflake_libcurl_cJSON_ParseWithOpts(value, 0, 0);
 }
 
 #define cjson_min(a, b) ((a < b) ? a : b)
 
-static unsigned char *print(const cJSON * const item, cJSON_bool format, const internal_hooks * const hooks)
+static unsigned char *print(const snowflake_libcurl_cJSON * const item, snowflake_libcurl_cJSON_bool format, const internal_hooks * const hooks)
 {
     static const size_t default_buffer_size = 256;
     printbuffer buffer[1];
@@ -1153,18 +1153,18 @@ fail:
     return NULL;
 }
 
-/* Render a cJSON item/entity/structure to text. */
-CJSON_PUBLIC(char *) cJSON_Print(const cJSON *item)
+/* Render a snowflake_libcurl_cJSON item/entity/structure to text. */
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(char *) snowflake_libcurl_cJSON_Print(const snowflake_libcurl_cJSON *item)
 {
     return (char*)print(item, true, &global_hooks);
 }
 
-CJSON_PUBLIC(char *) cJSON_PrintUnformatted(const cJSON *item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(char *) snowflake_libcurl_cJSON_PrintUnformatted(const snowflake_libcurl_cJSON *item)
 {
     return (char*)print(item, false, &global_hooks);
 }
 
-CJSON_PUBLIC(char *) cJSON_PrintBuffered(const cJSON *item, int prebuffer, cJSON_bool fmt)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(char *) snowflake_libcurl_cJSON_PrintBuffered(const snowflake_libcurl_cJSON *item, int prebuffer, snowflake_libcurl_cJSON_bool fmt)
 {
     printbuffer p = { 0, 0, 0, 0, 0, 0, { 0, 0, 0 } };
 
@@ -1194,7 +1194,7 @@ CJSON_PUBLIC(char *) cJSON_PrintBuffered(const cJSON *item, int prebuffer, cJSON
     return (char*)p.buffer;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_PrintPreallocated(cJSON *item, char *buf, const int len, const cJSON_bool fmt)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_PrintPreallocated(snowflake_libcurl_cJSON *item, char *buf, const int len, const snowflake_libcurl_cJSON_bool fmt)
 {
     printbuffer p = { 0, 0, 0, 0, 0, 0, { 0, 0, 0 } };
 
@@ -1214,7 +1214,7 @@ CJSON_PUBLIC(cJSON_bool) cJSON_PrintPreallocated(cJSON *item, char *buf, const i
 }
 
 /* Parser core - when encountering text, process appropriately. */
-static cJSON_bool parse_value(cJSON * const item, parse_buffer * const input_buffer)
+static snowflake_libcurl_cJSON_bool parse_value(snowflake_libcurl_cJSON * const item, parse_buffer * const input_buffer)
 {
     if ((input_buffer == NULL) || (input_buffer->content == NULL))
     {
@@ -1225,21 +1225,21 @@ static cJSON_bool parse_value(cJSON * const item, parse_buffer * const input_buf
     /* null */
     if (can_read(input_buffer, 4) && (strncmp((const char*)buffer_at_offset(input_buffer), "null", 4) == 0))
     {
-        item->type = cJSON_NULL;
+        item->type = snowflake_libcurl_cJSON_NULL;
         input_buffer->offset += 4;
         return true;
     }
     /* false */
     if (can_read(input_buffer, 5) && (strncmp((const char*)buffer_at_offset(input_buffer), "false", 5) == 0))
     {
-        item->type = cJSON_False;
+        item->type = snowflake_libcurl_cJSON_False;
         input_buffer->offset += 5;
         return true;
     }
     /* true */
     if (can_read(input_buffer, 4) && (strncmp((const char*)buffer_at_offset(input_buffer), "true", 4) == 0))
     {
-        item->type = cJSON_True;
+        item->type = snowflake_libcurl_cJSON_True;
         item->valueint = 1;
         input_buffer->offset += 4;
         return true;
@@ -1269,7 +1269,7 @@ static cJSON_bool parse_value(cJSON * const item, parse_buffer * const input_buf
 }
 
 /* Render a value to text. */
-static cJSON_bool print_value(const cJSON * const item, printbuffer * const output_buffer)
+static snowflake_libcurl_cJSON_bool print_value(const snowflake_libcurl_cJSON * const item, printbuffer * const output_buffer)
 {
     unsigned char *output = NULL;
 
@@ -1280,7 +1280,7 @@ static cJSON_bool print_value(const cJSON * const item, printbuffer * const outp
 
     switch ((item->type) & 0xFF)
     {
-        case cJSON_NULL:
+        case snowflake_libcurl_cJSON_NULL:
             output = ensure(output_buffer, 5);
             if (output == NULL)
             {
@@ -1289,7 +1289,7 @@ static cJSON_bool print_value(const cJSON * const item, printbuffer * const outp
             strcpy((char*)output, "null");
             return true;
 
-        case cJSON_False:
+        case snowflake_libcurl_cJSON_False:
             output = ensure(output_buffer, 6);
             if (output == NULL)
             {
@@ -1298,7 +1298,7 @@ static cJSON_bool print_value(const cJSON * const item, printbuffer * const outp
             strcpy((char*)output, "false");
             return true;
 
-        case cJSON_True:
+        case snowflake_libcurl_cJSON_True:
             output = ensure(output_buffer, 5);
             if (output == NULL)
             {
@@ -1307,10 +1307,10 @@ static cJSON_bool print_value(const cJSON * const item, printbuffer * const outp
             strcpy((char*)output, "true");
             return true;
 
-        case cJSON_Number:
+        case snowflake_libcurl_cJSON_Number:
             return print_number(item, output_buffer);
 
-        case cJSON_Raw:
+        case snowflake_libcurl_cJSON_Raw:
         {
             size_t raw_length = 0;
             if (item->valuestring == NULL)
@@ -1328,13 +1328,13 @@ static cJSON_bool print_value(const cJSON * const item, printbuffer * const outp
             return true;
         }
 
-        case cJSON_String:
+        case snowflake_libcurl_cJSON_String:
             return print_string(item, output_buffer);
 
-        case cJSON_Array:
+        case snowflake_libcurl_cJSON_Array:
             return print_array(item, output_buffer);
 
-        case cJSON_Object:
+        case snowflake_libcurl_cJSON_Object:
             return print_object(item, output_buffer);
 
         default:
@@ -1343,12 +1343,12 @@ static cJSON_bool print_value(const cJSON * const item, printbuffer * const outp
 }
 
 /* Build an array from input text. */
-static cJSON_bool parse_array(cJSON * const item, parse_buffer * const input_buffer)
+static snowflake_libcurl_cJSON_bool parse_array(snowflake_libcurl_cJSON * const item, parse_buffer * const input_buffer)
 {
-    cJSON *head = NULL; /* head of the linked list */
-    cJSON *current_item = NULL;
+    snowflake_libcurl_cJSON *head = NULL; /* head of the linked list */
+    snowflake_libcurl_cJSON *current_item = NULL;
 
-    if (input_buffer->depth >= CJSON_NESTING_LIMIT)
+    if (input_buffer->depth >= SNOWFLAKE_LIBCURL_CJSON_NESTING_LIMIT)
     {
         return false; /* to deeply nested */
     }
@@ -1381,7 +1381,7 @@ static cJSON_bool parse_array(cJSON * const item, parse_buffer * const input_buf
     do
     {
         /* allocate next item */
-        cJSON *new_item = cJSON_New_Item(&(input_buffer->hooks));
+        snowflake_libcurl_cJSON *new_item = snowflake_libcurl_cJSON_New_Item(&(input_buffer->hooks));
         if (new_item == NULL)
         {
             goto fail; /* allocation failure */
@@ -1420,7 +1420,7 @@ static cJSON_bool parse_array(cJSON * const item, parse_buffer * const input_buf
 success:
     input_buffer->depth--;
 
-    item->type = cJSON_Array;
+    item->type = snowflake_libcurl_cJSON_Array;
     item->child = head;
 
     input_buffer->offset++;
@@ -1430,18 +1430,18 @@ success:
 fail:
     if (head != NULL)
     {
-        cJSON_Delete(head);
+        snowflake_libcurl_cJSON_Delete(head);
     }
 
     return false;
 }
 
 /* Render an array to text */
-static cJSON_bool print_array(const cJSON * const item, printbuffer * const output_buffer)
+static snowflake_libcurl_cJSON_bool print_array(const snowflake_libcurl_cJSON * const item, printbuffer * const output_buffer)
 {
     unsigned char *output_pointer = NULL;
     size_t length = 0;
-    cJSON *current_element = item->child;
+    snowflake_libcurl_cJSON *current_element = item->child;
 
     if (output_buffer == NULL)
     {
@@ -1499,12 +1499,12 @@ static cJSON_bool print_array(const cJSON * const item, printbuffer * const outp
 }
 
 /* Build an object from the text. */
-static cJSON_bool parse_object(cJSON * const item, parse_buffer * const input_buffer)
+static snowflake_libcurl_cJSON_bool parse_object(snowflake_libcurl_cJSON * const item, parse_buffer * const input_buffer)
 {
-    cJSON *head = NULL; /* linked list head */
-    cJSON *current_item = NULL;
+    snowflake_libcurl_cJSON *head = NULL; /* linked list head */
+    snowflake_libcurl_cJSON *current_item = NULL;
 
-    if (input_buffer->depth >= CJSON_NESTING_LIMIT)
+    if (input_buffer->depth >= SNOWFLAKE_LIBCURL_CJSON_NESTING_LIMIT)
     {
         return false; /* to deeply nested */
     }
@@ -1535,7 +1535,7 @@ static cJSON_bool parse_object(cJSON * const item, parse_buffer * const input_bu
     do
     {
         /* allocate next item */
-        cJSON *new_item = cJSON_New_Item(&(input_buffer->hooks));
+        snowflake_libcurl_cJSON *new_item = snowflake_libcurl_cJSON_New_Item(&(input_buffer->hooks));
         if (new_item == NULL)
         {
             goto fail; /* allocation failure */
@@ -1592,7 +1592,7 @@ static cJSON_bool parse_object(cJSON * const item, parse_buffer * const input_bu
 success:
     input_buffer->depth--;
 
-    item->type = cJSON_Object;
+    item->type = snowflake_libcurl_cJSON_Object;
     item->child = head;
 
     input_buffer->offset++;
@@ -1601,18 +1601,18 @@ success:
 fail:
     if (head != NULL)
     {
-        cJSON_Delete(head);
+        snowflake_libcurl_cJSON_Delete(head);
     }
 
     return false;
 }
 
 /* Render an object to text. */
-static cJSON_bool print_object(const cJSON * const item, printbuffer * const output_buffer)
+static snowflake_libcurl_cJSON_bool print_object(const snowflake_libcurl_cJSON * const item, printbuffer * const output_buffer)
 {
     unsigned char *output_pointer = NULL;
     size_t length = 0;
-    cJSON *current_item = item->child;
+    snowflake_libcurl_cJSON *current_item = item->child;
 
     if (output_buffer == NULL)
     {
@@ -1722,9 +1722,9 @@ static cJSON_bool print_object(const cJSON * const item, printbuffer * const out
 }
 
 /* Get Array size/item / object item. */
-CJSON_PUBLIC(int) cJSON_GetArraySize(const cJSON *array)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(int) snowflake_libcurl_cJSON_GetArraySize(const snowflake_libcurl_cJSON *array)
 {
-    cJSON *child = NULL;
+    snowflake_libcurl_cJSON *child = NULL;
     size_t size = 0;
 
     if (array == NULL)
@@ -1745,9 +1745,9 @@ CJSON_PUBLIC(int) cJSON_GetArraySize(const cJSON *array)
     return (int)size;
 }
 
-static cJSON* get_array_item(const cJSON *array, size_t index)
+static snowflake_libcurl_cJSON* get_array_item(const snowflake_libcurl_cJSON *array, size_t index)
 {
-    cJSON *current_child = NULL;
+    snowflake_libcurl_cJSON *current_child = NULL;
 
     if (array == NULL)
     {
@@ -1764,7 +1764,7 @@ static cJSON* get_array_item(const cJSON *array, size_t index)
     return current_child;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_GetArrayItem(const cJSON *array, int index)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_GetArrayItem(const snowflake_libcurl_cJSON *array, int index)
 {
     if (index < 0)
     {
@@ -1774,9 +1774,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetArrayItem(const cJSON *array, int index)
     return get_array_item(array, (size_t)index);
 }
 
-static cJSON *get_object_item(const cJSON * const object, const char * const name, const cJSON_bool case_sensitive)
+static snowflake_libcurl_cJSON *get_object_item(const snowflake_libcurl_cJSON * const object, const char * const name, const snowflake_libcurl_cJSON_bool case_sensitive)
 {
-    cJSON *current_element = NULL;
+    snowflake_libcurl_cJSON *current_element = NULL;
 
     if ((object == NULL) || (name == NULL))
     {
@@ -1802,53 +1802,53 @@ static cJSON *get_object_item(const cJSON * const object, const char * const nam
     return current_element;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_GetObjectItem(const cJSON * const object, const char * const string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_GetObjectItem(const snowflake_libcurl_cJSON * const object, const char * const string)
 {
     return get_object_item(object, string, false);
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const object, const char * const string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_GetObjectItemCaseSensitive(const snowflake_libcurl_cJSON * const object, const char * const string)
 {
     return get_object_item(object, string, true);
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_HasObjectItem(const cJSON *object, const char *string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_HasObjectItem(const snowflake_libcurl_cJSON *object, const char *string)
 {
-    return cJSON_GetObjectItem(object, string) ? 1 : 0;
+    return snowflake_libcurl_cJSON_GetObjectItem(object, string) ? 1 : 0;
 }
 
 /* Utility for array list handling. */
-static void suffix_object(cJSON *prev, cJSON *item)
+static void suffix_object(snowflake_libcurl_cJSON *prev, snowflake_libcurl_cJSON *item)
 {
     prev->next = item;
     item->prev = prev;
 }
 
 /* Utility for handling references. */
-static cJSON *create_reference(const cJSON *item, const internal_hooks * const hooks)
+static snowflake_libcurl_cJSON *create_reference(const snowflake_libcurl_cJSON *item, const internal_hooks * const hooks)
 {
-    cJSON *reference = NULL;
+    snowflake_libcurl_cJSON *reference = NULL;
     if (item == NULL)
     {
         return NULL;
     }
 
-    reference = cJSON_New_Item(hooks);
+    reference = snowflake_libcurl_cJSON_New_Item(hooks);
     if (reference == NULL)
     {
         return NULL;
     }
 
-    memcpy(reference, item, sizeof(cJSON));
+    memcpy(reference, item, sizeof(snowflake_libcurl_cJSON));
     reference->string = NULL;
-    reference->type |= cJSON_IsReference;
+    reference->type |= snowflake_libcurl_cJSON_IsReference;
     reference->next = reference->prev = NULL;
     return reference;
 }
 
-static cJSON_bool add_item_to_array(cJSON *array, cJSON *item)
+static snowflake_libcurl_cJSON_bool add_item_to_array(snowflake_libcurl_cJSON *array, snowflake_libcurl_cJSON *item)
 {
-    cJSON *child = NULL;
+    snowflake_libcurl_cJSON *child = NULL;
 
     if ((item == NULL) || (array == NULL))
     {
@@ -1876,7 +1876,7 @@ static cJSON_bool add_item_to_array(cJSON *array, cJSON *item)
 }
 
 /* Add item to array/object. */
-CJSON_PUBLIC(void) cJSON_AddItemToArray(cJSON *array, cJSON *item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_AddItemToArray(snowflake_libcurl_cJSON *array, snowflake_libcurl_cJSON *item)
 {
     add_item_to_array(array, item);
 }
@@ -1897,10 +1897,10 @@ static void* cast_away_const(const void* string)
 #endif
 
 
-static cJSON_bool add_item_to_object(cJSON * const object, const char * const string, cJSON * const item, const internal_hooks * const hooks, const cJSON_bool constant_key)
+static snowflake_libcurl_cJSON_bool add_item_to_object(snowflake_libcurl_cJSON * const object, const char * const string, snowflake_libcurl_cJSON * const item, const internal_hooks * const hooks, const snowflake_libcurl_cJSON_bool constant_key)
 {
     char *new_key = NULL;
-    int new_type = cJSON_Invalid;
+    int new_type = snowflake_libcurl_cJSON_Invalid;
 
     if ((object == NULL) || (string == NULL) || (item == NULL))
     {
@@ -1910,20 +1910,20 @@ static cJSON_bool add_item_to_object(cJSON * const object, const char * const st
     if (constant_key)
     {
         new_key = (char*)cast_away_const(string);
-        new_type = item->type | cJSON_StringIsConst;
+        new_type = item->type | snowflake_libcurl_cJSON_StringIsConst;
     }
     else
     {
-        new_key = (char*)cJSON_strdup((const unsigned char*)string, hooks);
+        new_key = (char*)snowflake_libcurl_cJSON_strdup((const unsigned char*)string, hooks);
         if (new_key == NULL)
         {
             return false;
         }
 
-        new_type = item->type & ~cJSON_StringIsConst;
+        new_type = item->type & ~snowflake_libcurl_cJSON_StringIsConst;
     }
 
-    if (!(item->type & cJSON_StringIsConst) && (item->string != NULL))
+    if (!(item->type & snowflake_libcurl_cJSON_StringIsConst) && (item->string != NULL))
     {
         hooks->deallocate(item->string);
     }
@@ -1934,18 +1934,18 @@ static cJSON_bool add_item_to_object(cJSON * const object, const char * const st
     return add_item_to_array(object, item);
 }
 
-CJSON_PUBLIC(void) cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_AddItemToObject(snowflake_libcurl_cJSON *object, const char *string, snowflake_libcurl_cJSON *item)
 {
     add_item_to_object(object, string, item, &global_hooks, false);
 }
 
 /* Add an item to an object with constant string as key */
-CJSON_PUBLIC(void) cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_AddItemToObjectCS(snowflake_libcurl_cJSON *object, const char *string, snowflake_libcurl_cJSON *item)
 {
     add_item_to_object(object, string, item, &global_hooks, true);
 }
 
-CJSON_PUBLIC(void) cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_AddItemReferenceToArray(snowflake_libcurl_cJSON *array, snowflake_libcurl_cJSON *item)
 {
     if (array == NULL)
     {
@@ -1955,7 +1955,7 @@ CJSON_PUBLIC(void) cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item)
     add_item_to_array(array, create_reference(item, &global_hooks));
 }
 
-CJSON_PUBLIC(void) cJSON_AddItemReferenceToObject(cJSON *object, const char *string, cJSON *item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_AddItemReferenceToObject(snowflake_libcurl_cJSON *object, const char *string, snowflake_libcurl_cJSON *item)
 {
     if ((object == NULL) || (string == NULL))
     {
@@ -1965,115 +1965,115 @@ CJSON_PUBLIC(void) cJSON_AddItemReferenceToObject(cJSON *object, const char *str
     add_item_to_object(object, string, create_reference(item, &global_hooks), &global_hooks, false);
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddNullToObject(cJSON * const object, const char * const name)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddNullToObject(snowflake_libcurl_cJSON * const object, const char * const name)
 {
-    cJSON *null = cJSON_CreateNull();
+    snowflake_libcurl_cJSON *null = snowflake_libcurl_cJSON_CreateNull();
     if (add_item_to_object(object, name, null, &global_hooks, false))
     {
         return null;
     }
 
-    cJSON_Delete(null);
+    snowflake_libcurl_cJSON_Delete(null);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddTrueToObject(cJSON * const object, const char * const name)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddTrueToObject(snowflake_libcurl_cJSON * const object, const char * const name)
 {
-    cJSON *true_item = cJSON_CreateTrue();
+    snowflake_libcurl_cJSON *true_item = snowflake_libcurl_cJSON_CreateTrue();
     if (add_item_to_object(object, name, true_item, &global_hooks, false))
     {
         return true_item;
     }
 
-    cJSON_Delete(true_item);
+    snowflake_libcurl_cJSON_Delete(true_item);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddFalseToObject(cJSON * const object, const char * const name)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddFalseToObject(snowflake_libcurl_cJSON * const object, const char * const name)
 {
-    cJSON *false_item = cJSON_CreateFalse();
+    snowflake_libcurl_cJSON *false_item = snowflake_libcurl_cJSON_CreateFalse();
     if (add_item_to_object(object, name, false_item, &global_hooks, false))
     {
         return false_item;
     }
 
-    cJSON_Delete(false_item);
+    snowflake_libcurl_cJSON_Delete(false_item);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddBoolToObject(cJSON * const object, const char * const name, const cJSON_bool boolean)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddBoolToObject(snowflake_libcurl_cJSON * const object, const char * const name, const snowflake_libcurl_cJSON_bool boolean)
 {
-    cJSON *bool_item = cJSON_CreateBool(boolean);
+    snowflake_libcurl_cJSON *bool_item = snowflake_libcurl_cJSON_CreateBool(boolean);
     if (add_item_to_object(object, name, bool_item, &global_hooks, false))
     {
         return bool_item;
     }
 
-    cJSON_Delete(bool_item);
+    snowflake_libcurl_cJSON_Delete(bool_item);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddNumberToObject(cJSON * const object, const char * const name, const double number)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddNumberToObject(snowflake_libcurl_cJSON * const object, const char * const name, const double number)
 {
-    cJSON *number_item = cJSON_CreateNumber(number);
+    snowflake_libcurl_cJSON *number_item = snowflake_libcurl_cJSON_CreateNumber(number);
     if (add_item_to_object(object, name, number_item, &global_hooks, false))
     {
         return number_item;
     }
 
-    cJSON_Delete(number_item);
+    snowflake_libcurl_cJSON_Delete(number_item);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddStringToObject(cJSON * const object, const char * const name, const char * const string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddStringToObject(snowflake_libcurl_cJSON * const object, const char * const name, const char * const string)
 {
-    cJSON *string_item = cJSON_CreateString(string);
+    snowflake_libcurl_cJSON *string_item = snowflake_libcurl_cJSON_CreateString(string);
     if (add_item_to_object(object, name, string_item, &global_hooks, false))
     {
         return string_item;
     }
 
-    cJSON_Delete(string_item);
+    snowflake_libcurl_cJSON_Delete(string_item);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddRawToObject(cJSON * const object, const char * const name, const char * const raw)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddRawToObject(snowflake_libcurl_cJSON * const object, const char * const name, const char * const raw)
 {
-    cJSON *raw_item = cJSON_CreateRaw(raw);
+    snowflake_libcurl_cJSON *raw_item = snowflake_libcurl_cJSON_CreateRaw(raw);
     if (add_item_to_object(object, name, raw_item, &global_hooks, false))
     {
         return raw_item;
     }
 
-    cJSON_Delete(raw_item);
+    snowflake_libcurl_cJSON_Delete(raw_item);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddObjectToObject(cJSON * const object, const char * const name)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddObjectToObject(snowflake_libcurl_cJSON * const object, const char * const name)
 {
-    cJSON *object_item = cJSON_CreateObject();
+    snowflake_libcurl_cJSON *object_item = snowflake_libcurl_cJSON_CreateObject();
     if (add_item_to_object(object, name, object_item, &global_hooks, false))
     {
         return object_item;
     }
 
-    cJSON_Delete(object_item);
+    snowflake_libcurl_cJSON_Delete(object_item);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON*) cJSON_AddArrayToObject(cJSON * const object, const char * const name)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON*) snowflake_libcurl_cJSON_AddArrayToObject(snowflake_libcurl_cJSON * const object, const char * const name)
 {
-    cJSON *array = cJSON_CreateArray();
+    snowflake_libcurl_cJSON *array = snowflake_libcurl_cJSON_CreateArray();
     if (add_item_to_object(object, name, array, &global_hooks, false))
     {
         return array;
     }
 
-    cJSON_Delete(array);
+    snowflake_libcurl_cJSON_Delete(array);
     return NULL;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_DetachItemViaPointer(cJSON *parent, cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_DetachItemViaPointer(snowflake_libcurl_cJSON *parent, snowflake_libcurl_cJSON * const item)
 {
     if ((parent == NULL) || (item == NULL))
     {
@@ -2103,49 +2103,49 @@ CJSON_PUBLIC(cJSON *) cJSON_DetachItemViaPointer(cJSON *parent, cJSON * const it
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromArray(cJSON *array, int which)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_DetachItemFromArray(snowflake_libcurl_cJSON *array, int which)
 {
     if (which < 0)
     {
         return NULL;
     }
 
-    return cJSON_DetachItemViaPointer(array, get_array_item(array, (size_t)which));
+    return snowflake_libcurl_cJSON_DetachItemViaPointer(array, get_array_item(array, (size_t)which));
 }
 
-CJSON_PUBLIC(void) cJSON_DeleteItemFromArray(cJSON *array, int which)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_DeleteItemFromArray(snowflake_libcurl_cJSON *array, int which)
 {
-    cJSON_Delete(cJSON_DetachItemFromArray(array, which));
+    snowflake_libcurl_cJSON_Delete(snowflake_libcurl_cJSON_DetachItemFromArray(array, which));
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObject(cJSON *object, const char *string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_DetachItemFromObject(snowflake_libcurl_cJSON *object, const char *string)
 {
-    cJSON *to_detach = cJSON_GetObjectItem(object, string);
+    snowflake_libcurl_cJSON *to_detach = snowflake_libcurl_cJSON_GetObjectItem(object, string);
 
-    return cJSON_DetachItemViaPointer(object, to_detach);
+    return snowflake_libcurl_cJSON_DetachItemViaPointer(object, to_detach);
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObjectCaseSensitive(cJSON *object, const char *string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_DetachItemFromObjectCaseSensitive(snowflake_libcurl_cJSON *object, const char *string)
 {
-    cJSON *to_detach = cJSON_GetObjectItemCaseSensitive(object, string);
+    snowflake_libcurl_cJSON *to_detach = snowflake_libcurl_cJSON_GetObjectItemCaseSensitive(object, string);
 
-    return cJSON_DetachItemViaPointer(object, to_detach);
+    return snowflake_libcurl_cJSON_DetachItemViaPointer(object, to_detach);
 }
 
-CJSON_PUBLIC(void) cJSON_DeleteItemFromObject(cJSON *object, const char *string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_DeleteItemFromObject(snowflake_libcurl_cJSON *object, const char *string)
 {
-    cJSON_Delete(cJSON_DetachItemFromObject(object, string));
+    snowflake_libcurl_cJSON_Delete(snowflake_libcurl_cJSON_DetachItemFromObject(object, string));
 }
 
-CJSON_PUBLIC(void) cJSON_DeleteItemFromObjectCaseSensitive(cJSON *object, const char *string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_DeleteItemFromObjectCaseSensitive(snowflake_libcurl_cJSON *object, const char *string)
 {
-    cJSON_Delete(cJSON_DetachItemFromObjectCaseSensitive(object, string));
+    snowflake_libcurl_cJSON_Delete(snowflake_libcurl_cJSON_DetachItemFromObjectCaseSensitive(object, string));
 }
 
 /* Replace array/object items with new ones. */
-CJSON_PUBLIC(void) cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_InsertItemInArray(snowflake_libcurl_cJSON *array, int which, snowflake_libcurl_cJSON *newitem)
 {
-    cJSON *after_inserted = NULL;
+    snowflake_libcurl_cJSON *after_inserted = NULL;
 
     if (which < 0)
     {
@@ -2172,7 +2172,7 @@ CJSON_PUBLIC(void) cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newit
     }
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemViaPointer(cJSON * const parent, cJSON * const item, cJSON * replacement)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_ReplaceItemViaPointer(snowflake_libcurl_cJSON * const parent, snowflake_libcurl_cJSON * const item, snowflake_libcurl_cJSON * replacement)
 {
     if ((parent == NULL) || (replacement == NULL) || (item == NULL))
     {
@@ -2202,22 +2202,22 @@ CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemViaPointer(cJSON * const parent, cJSON
 
     item->next = NULL;
     item->prev = NULL;
-    cJSON_Delete(item);
+    snowflake_libcurl_cJSON_Delete(item);
 
     return true;
 }
 
-CJSON_PUBLIC(void) cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_ReplaceItemInArray(snowflake_libcurl_cJSON *array, int which, snowflake_libcurl_cJSON *newitem)
 {
     if (which < 0)
     {
         return;
     }
 
-    cJSON_ReplaceItemViaPointer(array, get_array_item(array, (size_t)which), newitem);
+    snowflake_libcurl_cJSON_ReplaceItemViaPointer(array, get_array_item(array, (size_t)which), newitem);
 }
 
-static cJSON_bool replace_item_in_object(cJSON *object, const char *string, cJSON *replacement, cJSON_bool case_sensitive)
+static snowflake_libcurl_cJSON_bool replace_item_in_object(snowflake_libcurl_cJSON *object, const char *string, snowflake_libcurl_cJSON *replacement, snowflake_libcurl_cJSON_bool case_sensitive)
 {
     if ((replacement == NULL) || (string == NULL))
     {
@@ -2225,79 +2225,79 @@ static cJSON_bool replace_item_in_object(cJSON *object, const char *string, cJSO
     }
 
     /* replace the name in the replacement */
-    if (!(replacement->type & cJSON_StringIsConst) && (replacement->string != NULL))
+    if (!(replacement->type & snowflake_libcurl_cJSON_StringIsConst) && (replacement->string != NULL))
     {
-        cJSON_free(replacement->string);
+        snowflake_libcurl_cJSON_free(replacement->string);
     }
-    replacement->string = (char*)cJSON_strdup((const unsigned char*)string, &global_hooks);
-    replacement->type &= ~cJSON_StringIsConst;
+    replacement->string = (char*)snowflake_libcurl_cJSON_strdup((const unsigned char*)string, &global_hooks);
+    replacement->type &= ~snowflake_libcurl_cJSON_StringIsConst;
 
-    cJSON_ReplaceItemViaPointer(object, get_object_item(object, string, case_sensitive), replacement);
+    snowflake_libcurl_cJSON_ReplaceItemViaPointer(object, get_object_item(object, string, case_sensitive), replacement);
 
     return true;
 }
 
-CJSON_PUBLIC(void) cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_ReplaceItemInObject(snowflake_libcurl_cJSON *object, const char *string, snowflake_libcurl_cJSON *newitem)
 {
     replace_item_in_object(object, string, newitem, false);
 }
 
-CJSON_PUBLIC(void) cJSON_ReplaceItemInObjectCaseSensitive(cJSON *object, const char *string, cJSON *newitem)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_ReplaceItemInObjectCaseSensitive(snowflake_libcurl_cJSON *object, const char *string, snowflake_libcurl_cJSON *newitem)
 {
     replace_item_in_object(object, string, newitem, true);
 }
 
 /* Create basic types: */
-CJSON_PUBLIC(cJSON *) cJSON_CreateNull(void)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateNull(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if(item)
     {
-        item->type = cJSON_NULL;
+        item->type = snowflake_libcurl_cJSON_NULL;
     }
 
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateTrue(void)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateTrue(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if(item)
     {
-        item->type = cJSON_True;
+        item->type = snowflake_libcurl_cJSON_True;
     }
 
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateFalse(void)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateFalse(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if(item)
     {
-        item->type = cJSON_False;
+        item->type = snowflake_libcurl_cJSON_False;
     }
 
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateBool(cJSON_bool b)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateBool(snowflake_libcurl_cJSON_bool b)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if(item)
     {
-        item->type = b ? cJSON_True : cJSON_False;
+        item->type = b ? snowflake_libcurl_cJSON_True : snowflake_libcurl_cJSON_False;
     }
 
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateNumber(double num)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateNumber(double num)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if(item)
     {
-        item->type = cJSON_Number;
+        item->type = snowflake_libcurl_cJSON_Number;
         item->valuedouble = num;
 
         /* use saturation in case of overflow */
@@ -2318,16 +2318,16 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateNumber(double num)
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateString(const char *string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateString(const char *string)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if(item)
     {
-        item->type = cJSON_String;
-        item->valuestring = (char*)cJSON_strdup((const unsigned char*)string, &global_hooks);
+        item->type = snowflake_libcurl_cJSON_String;
+        item->valuestring = (char*)snowflake_libcurl_cJSON_strdup((const unsigned char*)string, &global_hooks);
         if(!item->valuestring)
         {
-            cJSON_Delete(item);
+            snowflake_libcurl_cJSON_Delete(item);
             return NULL;
         }
     }
@@ -2335,49 +2335,49 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateString(const char *string)
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateStringReference(const char *string)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateStringReference(const char *string)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if (item != NULL)
     {
-        item->type = cJSON_String | cJSON_IsReference;
+        item->type = snowflake_libcurl_cJSON_String | snowflake_libcurl_cJSON_IsReference;
         item->valuestring = (char*)cast_away_const(string);
     }
 
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateObjectReference(const cJSON *child)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateObjectReference(const snowflake_libcurl_cJSON *child)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if (item != NULL) {
-        item->type = cJSON_Object | cJSON_IsReference;
-        item->child = (cJSON*)cast_away_const(child);
+        item->type = snowflake_libcurl_cJSON_Object | snowflake_libcurl_cJSON_IsReference;
+        item->child = (snowflake_libcurl_cJSON*)cast_away_const(child);
     }
 
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateArrayReference(const cJSON *child) {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateArrayReference(const snowflake_libcurl_cJSON *child) {
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if (item != NULL) {
-        item->type = cJSON_Array | cJSON_IsReference;
-        item->child = (cJSON*)cast_away_const(child);
+        item->type = snowflake_libcurl_cJSON_Array | snowflake_libcurl_cJSON_IsReference;
+        item->child = (snowflake_libcurl_cJSON*)cast_away_const(child);
     }
 
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateRaw(const char *raw)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateRaw(const char *raw)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if(item)
     {
-        item->type = cJSON_Raw;
-        item->valuestring = (char*)cJSON_strdup((const unsigned char*)raw, &global_hooks);
+        item->type = snowflake_libcurl_cJSON_Raw;
+        item->valuestring = (char*)snowflake_libcurl_cJSON_strdup((const unsigned char*)raw, &global_hooks);
         if(!item->valuestring)
         {
-            cJSON_Delete(item);
+            snowflake_libcurl_cJSON_Delete(item);
             return NULL;
         }
     }
@@ -2385,48 +2385,48 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateRaw(const char *raw)
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateArray(void)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateArray(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if(item)
     {
-        item->type=cJSON_Array;
+        item->type=snowflake_libcurl_cJSON_Array;
     }
 
     return item;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateObject(void)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateObject(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    snowflake_libcurl_cJSON *item = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if (item)
     {
-        item->type = cJSON_Object;
+        item->type = snowflake_libcurl_cJSON_Object;
     }
 
     return item;
 }
 
 /* Create Arrays: */
-CJSON_PUBLIC(cJSON *) cJSON_CreateIntArray(const int *numbers, int count)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateIntArray(const int *numbers, int count)
 {
     size_t i = 0;
-    cJSON *n = NULL;
-    cJSON *p = NULL;
-    cJSON *a = NULL;
+    snowflake_libcurl_cJSON *n = NULL;
+    snowflake_libcurl_cJSON *p = NULL;
+    snowflake_libcurl_cJSON *a = NULL;
 
     if ((count < 0) || (numbers == NULL))
     {
         return NULL;
     }
 
-    a = cJSON_CreateArray();
+    a = snowflake_libcurl_cJSON_CreateArray();
     for(i = 0; a && (i < (size_t)count); i++)
     {
-        n = cJSON_CreateNumber(numbers[i]);
+        n = snowflake_libcurl_cJSON_CreateNumber(numbers[i]);
         if (!n)
         {
-            cJSON_Delete(a);
+            snowflake_libcurl_cJSON_Delete(a);
             return NULL;
         }
         if(!i)
@@ -2443,26 +2443,26 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateIntArray(const int *numbers, int count)
     return a;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateFloatArray(const float *numbers, int count)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateFloatArray(const float *numbers, int count)
 {
     size_t i = 0;
-    cJSON *n = NULL;
-    cJSON *p = NULL;
-    cJSON *a = NULL;
+    snowflake_libcurl_cJSON *n = NULL;
+    snowflake_libcurl_cJSON *p = NULL;
+    snowflake_libcurl_cJSON *a = NULL;
 
     if ((count < 0) || (numbers == NULL))
     {
         return NULL;
     }
 
-    a = cJSON_CreateArray();
+    a = snowflake_libcurl_cJSON_CreateArray();
 
     for(i = 0; a && (i < (size_t)count); i++)
     {
-        n = cJSON_CreateNumber((double)numbers[i]);
+        n = snowflake_libcurl_cJSON_CreateNumber((double)numbers[i]);
         if(!n)
         {
-            cJSON_Delete(a);
+            snowflake_libcurl_cJSON_Delete(a);
             return NULL;
         }
         if(!i)
@@ -2479,26 +2479,26 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateFloatArray(const float *numbers, int count)
     return a;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateDoubleArray(const double *numbers, int count)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateDoubleArray(const double *numbers, int count)
 {
     size_t i = 0;
-    cJSON *n = NULL;
-    cJSON *p = NULL;
-    cJSON *a = NULL;
+    snowflake_libcurl_cJSON *n = NULL;
+    snowflake_libcurl_cJSON *p = NULL;
+    snowflake_libcurl_cJSON *a = NULL;
 
     if ((count < 0) || (numbers == NULL))
     {
         return NULL;
     }
 
-    a = cJSON_CreateArray();
+    a = snowflake_libcurl_cJSON_CreateArray();
 
     for(i = 0;a && (i < (size_t)count); i++)
     {
-        n = cJSON_CreateNumber(numbers[i]);
+        n = snowflake_libcurl_cJSON_CreateNumber(numbers[i]);
         if(!n)
         {
-            cJSON_Delete(a);
+            snowflake_libcurl_cJSON_Delete(a);
             return NULL;
         }
         if(!i)
@@ -2515,26 +2515,26 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateDoubleArray(const double *numbers, int count)
     return a;
 }
 
-CJSON_PUBLIC(cJSON *) cJSON_CreateStringArray(const char **strings, int count)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_CreateStringArray(const char **strings, int count)
 {
     size_t i = 0;
-    cJSON *n = NULL;
-    cJSON *p = NULL;
-    cJSON *a = NULL;
+    snowflake_libcurl_cJSON *n = NULL;
+    snowflake_libcurl_cJSON *p = NULL;
+    snowflake_libcurl_cJSON *a = NULL;
 
     if ((count < 0) || (strings == NULL))
     {
         return NULL;
     }
 
-    a = cJSON_CreateArray();
+    a = snowflake_libcurl_cJSON_CreateArray();
 
     for (i = 0; a && (i < (size_t)count); i++)
     {
-        n = cJSON_CreateString(strings[i]);
+        n = snowflake_libcurl_cJSON_CreateString(strings[i]);
         if(!n)
         {
-            cJSON_Delete(a);
+            snowflake_libcurl_cJSON_Delete(a);
             return NULL;
         }
         if(!i)
@@ -2552,12 +2552,12 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateStringArray(const char **strings, int count)
 }
 
 /* Duplication */
-CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON *) snowflake_libcurl_cJSON_Duplicate(const snowflake_libcurl_cJSON *item, snowflake_libcurl_cJSON_bool recurse)
 {
-    cJSON *newitem = NULL;
-    cJSON *child = NULL;
-    cJSON *next = NULL;
-    cJSON *newchild = NULL;
+    snowflake_libcurl_cJSON *newitem = NULL;
+    snowflake_libcurl_cJSON *child = NULL;
+    snowflake_libcurl_cJSON *next = NULL;
+    snowflake_libcurl_cJSON *newchild = NULL;
 
     /* Bail on bad ptr */
     if (!item)
@@ -2565,18 +2565,18 @@ CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse)
         goto fail;
     }
     /* Create new item */
-    newitem = cJSON_New_Item(&global_hooks);
+    newitem = snowflake_libcurl_cJSON_New_Item(&global_hooks);
     if (!newitem)
     {
         goto fail;
     }
     /* Copy over all vars */
-    newitem->type = item->type & (~cJSON_IsReference);
+    newitem->type = item->type & (~snowflake_libcurl_cJSON_IsReference);
     newitem->valueint = item->valueint;
     newitem->valuedouble = item->valuedouble;
     if (item->valuestring)
     {
-        newitem->valuestring = (char*)cJSON_strdup((unsigned char*)item->valuestring, &global_hooks);
+        newitem->valuestring = (char*)snowflake_libcurl_cJSON_strdup((unsigned char*)item->valuestring, &global_hooks);
         if (!newitem->valuestring)
         {
             goto fail;
@@ -2584,7 +2584,7 @@ CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse)
     }
     if (item->string)
     {
-        newitem->string = (item->type&cJSON_StringIsConst) ? item->string : (char*)cJSON_strdup((unsigned char*)item->string, &global_hooks);
+        newitem->string = (item->type&snowflake_libcurl_cJSON_StringIsConst) ? item->string : (char*)snowflake_libcurl_cJSON_strdup((unsigned char*)item->string, &global_hooks);
         if (!newitem->string)
         {
             goto fail;
@@ -2599,7 +2599,7 @@ CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse)
     child = item->child;
     while (child != NULL)
     {
-        newchild = cJSON_Duplicate(child, true); /* Duplicate (with recurse) each item in the ->next chain */
+        newchild = snowflake_libcurl_cJSON_Duplicate(child, true); /* Duplicate (with recurse) each item in the ->next chain */
         if (!newchild)
         {
             goto fail;
@@ -2625,13 +2625,13 @@ CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse)
 fail:
     if (newitem != NULL)
     {
-        cJSON_Delete(newitem);
+        snowflake_libcurl_cJSON_Delete(newitem);
     }
 
     return NULL;
 }
 
-CJSON_PUBLIC(void) cJSON_Minify(char *json)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_Minify(char *json)
 {
     unsigned char *into = (unsigned char*)json;
 
@@ -2701,109 +2701,109 @@ CJSON_PUBLIC(void) cJSON_Minify(char *json)
     *into = '\0';
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsInvalid(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsInvalid(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xFF) == cJSON_Invalid;
+    return (item->type & 0xFF) == snowflake_libcurl_cJSON_Invalid;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsFalse(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsFalse(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xFF) == cJSON_False;
+    return (item->type & 0xFF) == snowflake_libcurl_cJSON_False;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsTrue(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsTrue(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xff) == cJSON_True;
+    return (item->type & 0xff) == snowflake_libcurl_cJSON_True;
 }
 
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsBool(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsBool(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & (cJSON_True | cJSON_False)) != 0;
+    return (item->type & (snowflake_libcurl_cJSON_True | snowflake_libcurl_cJSON_False)) != 0;
 }
-CJSON_PUBLIC(cJSON_bool) cJSON_IsNull(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsNull(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xFF) == cJSON_NULL;
+    return (item->type & 0xFF) == snowflake_libcurl_cJSON_NULL;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsNumber(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsNumber(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xFF) == cJSON_Number;
+    return (item->type & 0xFF) == snowflake_libcurl_cJSON_Number;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsString(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsString(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xFF) == cJSON_String;
+    return (item->type & 0xFF) == snowflake_libcurl_cJSON_String;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsArray(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsArray(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xFF) == cJSON_Array;
+    return (item->type & 0xFF) == snowflake_libcurl_cJSON_Array;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsObject(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsObject(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xFF) == cJSON_Object;
+    return (item->type & 0xFF) == snowflake_libcurl_cJSON_Object;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_IsRaw(const cJSON * const item)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_IsRaw(const snowflake_libcurl_cJSON * const item)
 {
     if (item == NULL)
     {
         return false;
     }
 
-    return (item->type & 0xFF) == cJSON_Raw;
+    return (item->type & 0xFF) == snowflake_libcurl_cJSON_Raw;
 }
 
-CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * const b, const cJSON_bool case_sensitive)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(snowflake_libcurl_cJSON_bool) snowflake_libcurl_cJSON_Compare(const snowflake_libcurl_cJSON * const a, const snowflake_libcurl_cJSON * const b, const snowflake_libcurl_cJSON_bool case_sensitive)
 {
-    if ((a == NULL) || (b == NULL) || ((a->type & 0xFF) != (b->type & 0xFF)) || cJSON_IsInvalid(a))
+    if ((a == NULL) || (b == NULL) || ((a->type & 0xFF) != (b->type & 0xFF)) || snowflake_libcurl_cJSON_IsInvalid(a))
     {
         return false;
     }
@@ -2811,14 +2811,14 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
     /* check if type is valid */
     switch (a->type & 0xFF)
     {
-        case cJSON_False:
-        case cJSON_True:
-        case cJSON_NULL:
-        case cJSON_Number:
-        case cJSON_String:
-        case cJSON_Raw:
-        case cJSON_Array:
-        case cJSON_Object:
+        case snowflake_libcurl_cJSON_False:
+        case snowflake_libcurl_cJSON_True:
+        case snowflake_libcurl_cJSON_NULL:
+        case snowflake_libcurl_cJSON_Number:
+        case snowflake_libcurl_cJSON_String:
+        case snowflake_libcurl_cJSON_Raw:
+        case snowflake_libcurl_cJSON_Array:
+        case snowflake_libcurl_cJSON_Object:
             break;
 
         default:
@@ -2834,20 +2834,20 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
     switch (a->type & 0xFF)
     {
         /* in these cases and equal type is enough */
-        case cJSON_False:
-        case cJSON_True:
-        case cJSON_NULL:
+        case snowflake_libcurl_cJSON_False:
+        case snowflake_libcurl_cJSON_True:
+        case snowflake_libcurl_cJSON_NULL:
             return true;
 
-        case cJSON_Number:
+        case snowflake_libcurl_cJSON_Number:
             if (a->valuedouble == b->valuedouble)
             {
                 return true;
             }
             return false;
 
-        case cJSON_String:
-        case cJSON_Raw:
+        case snowflake_libcurl_cJSON_String:
+        case snowflake_libcurl_cJSON_Raw:
             if ((a->valuestring == NULL) || (b->valuestring == NULL))
             {
                 return false;
@@ -2859,14 +2859,14 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
 
             return false;
 
-        case cJSON_Array:
+        case snowflake_libcurl_cJSON_Array:
         {
-            cJSON *a_element = a->child;
-            cJSON *b_element = b->child;
+            snowflake_libcurl_cJSON *a_element = a->child;
+            snowflake_libcurl_cJSON *b_element = b->child;
 
             for (; (a_element != NULL) && (b_element != NULL);)
             {
-                if (!cJSON_Compare(a_element, b_element, case_sensitive))
+                if (!snowflake_libcurl_cJSON_Compare(a_element, b_element, case_sensitive))
                 {
                     return false;
                 }
@@ -2883,11 +2883,11 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
             return true;
         }
 
-        case cJSON_Object:
+        case snowflake_libcurl_cJSON_Object:
         {
-            cJSON *a_element = NULL;
-            cJSON *b_element = NULL;
-            cJSON_ArrayForEach(a_element, a)
+            snowflake_libcurl_cJSON *a_element = NULL;
+            snowflake_libcurl_cJSON *b_element = NULL;
+            snowflake_libcurl_cJSON_ArrayForEach(a_element, a)
             {
                 /* TODO This has O(n^2) runtime, which is horrible! */
                 b_element = get_object_item(b, a_element->string, case_sensitive);
@@ -2896,7 +2896,7 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
                     return false;
                 }
 
-                if (!cJSON_Compare(a_element, b_element, case_sensitive))
+                if (!snowflake_libcurl_cJSON_Compare(a_element, b_element, case_sensitive))
                 {
                     return false;
                 }
@@ -2904,7 +2904,7 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
 
             /* doing this twice, once on a and b to prevent true comparison if a subset of b
              * TODO: Do this the proper way, this is just a fix for now */
-            cJSON_ArrayForEach(b_element, b)
+            snowflake_libcurl_cJSON_ArrayForEach(b_element, b)
             {
                 a_element = get_object_item(a, b_element->string, case_sensitive);
                 if (a_element == NULL)
@@ -2912,7 +2912,7 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
                     return false;
                 }
 
-                if (!cJSON_Compare(b_element, a_element, case_sensitive))
+                if (!snowflake_libcurl_cJSON_Compare(b_element, a_element, case_sensitive))
                 {
                     return false;
                 }
@@ -2926,12 +2926,12 @@ CJSON_PUBLIC(cJSON_bool) cJSON_Compare(const cJSON * const a, const cJSON * cons
     }
 }
 
-CJSON_PUBLIC(void *) cJSON_malloc(size_t size)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void *) snowflake_libcurl_cJSON_malloc(size_t size)
 {
     return global_hooks.allocate(size);
 }
 
-CJSON_PUBLIC(void) cJSON_free(void *object)
+SNOWFLAKE_LIBCURL_CJSON_PUBLIC(void) snowflake_libcurl_cJSON_free(void *object)
 {
     global_hooks.deallocate(object);
 }
