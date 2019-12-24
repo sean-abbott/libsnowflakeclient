@@ -30,7 +30,7 @@ cd $SOURCE_DIR
 
 if [[ "$PLATFORM" == "linux" ]]; then
     # Linux 64 bit
-    export CC=gcc52
+    #export CC=gcc52
     make -f Makefile.in distclean > /dev/null || true
     ./configure ${zlib_config_opts[@]} > /dev/null || true
     make install > /dev/null || true
