@@ -304,16 +304,20 @@ sf_bool STDCALL curl_post_call(SF_CONNECT *sf,
     sf_bool ret = SF_BOOLEAN_FALSE;
     sf_bool stop = SF_BOOLEAN_FALSE;
 
+    log_debug("before memset");
     // Set to 0
     memset(query_code, 0, QUERYCODE_LEN);
 
+    log_debug("before do");
     do {
+        log_debug("befort if !http_perform");
         if (!http_perform(curl, POST_REQUEST_TYPE, url, header, body, json,
                           sf->network_timeout, SF_BOOLEAN_FALSE, error, sf->insecure_mode) ||
             !*json) {
             // Error is set in the perform function
             break;
         }
+        log_debug("before if json_copy_string_no_alloc");
         if ((json_error = json_copy_string_no_alloc(query_code, *json, "code",
                                                     QUERYCODE_LEN)) !=
             SF_JSON_ERROR_NONE &&
@@ -325,11 +329,13 @@ sf_bool STDCALL curl_post_call(SF_CONNECT *sf,
         }
 
         // No query code means things went well, just break and return
+        log_debug("before if query_code[0]");
         if (query_code[0] == '\0') {
             ret = SF_BOOLEAN_TRUE;
             break;
         }
 
+        log_debug("before strcmp(query_code, session_expired)");
         if (strcmp(query_code, SESSION_TOKEN_EXPIRED_CODE) == 0) {
             if (!renew_session(curl, sf, error)) {
                 // Error is set in renew session function
@@ -349,11 +355,13 @@ sf_bool STDCALL curl_post_call(SF_CONNECT *sf,
                 }
             }
         }
+        log_debug("before strcmp(query_code, session_invalid)");
         else if (strcmp(query_code, SESSION_TOKEN_INVALID_CODE) == 0) {
             SET_SNOWFLAKE_ERROR(error, SF_STATUS_ERROR_CONNECTION_NOT_EXIST,
                                 ERR_MSG_SESSION_TOKEN_INVALID, SF_SQLSTATE_CONNECTION_NOT_EXIST);
             break;
         }
+        log_debug("before strcmp(query_code, session_gone)");
         else if (strcmp(query_code, GONE_SESSION_CODE) == 0) {
             SET_SNOWFLAKE_ERROR(error, SF_STATUS_ERROR_CONNECTION_NOT_EXIST,
                                 ERR_MSG_GONE_SESSION, SF_SQLSTATE_CONNECTION_NOT_EXIST);
