@@ -748,7 +748,9 @@ SF_STATUS STDCALL snowflake_connect(SF_CONNECT *sf) {
     }
     ret = SF_STATUS_ERROR_GENERAL; // reset to the error
 
+    log_debug("before uuid4");
     uuid4_generate(sf->request_id);// request id
+    log_debug("UUID4_id: %s", sf->request_id);
 
     // Create body
     body = create_auth_json_body(
@@ -758,12 +760,13 @@ SF_STATUS STDCALL snowflake_connect(SF_CONNECT *sf) {
         sf->application_version,
         sf->timezone,
         sf->autocommit);
+    log_debug("created body");
     log_trace("Created body");
     s_body = snowflake_cJSON_Print(body);
     // TODO delete password before printing
-    if (DEBUG) {
-        log_debug("body:\n%s", s_body);
-    }
+    //if (DEBUG) {
+    log_debug("body:\n%s", s_body);
+    //}
 
     // Send request and get data
     if (request(sf, &resp, SESSION_URL, url_params,
