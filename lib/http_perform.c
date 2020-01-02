@@ -294,6 +294,7 @@ sf_bool STDCALL http_perform(CURL *curl,
         res = curl_easy_perform(curl);
         /* Check for errors */
         if (res != CURLE_OK) {
+            log_debug("curl was not ok");
             char msg[1024];
             if (res == CURLE_SSL_CACERT_BADFILE) {
                 sb_sprintf(msg, sizeof(msg), "curl_easy_perform() failed. err: %s, CA Cert file: %s",
@@ -308,6 +309,7 @@ sf_bool STDCALL http_perform(CURL *curl,
                                 msg,
                                 SF_SQLSTATE_UNABLE_TO_CONNECT);
         } else {
+            log_debug("curl was ok");
             if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code) !=
                 CURLE_OK) {
                 log_error("Unable to get http response code [%s]",
@@ -328,7 +330,9 @@ sf_bool STDCALL http_perform(CURL *curl,
         }
 
         // Reset everything
+        log_debug("before reset_curl");
         reset_curl(curl);
+        log_debug("after reset_curl");
         http_code = 0;
     }
     while (retry);

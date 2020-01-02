@@ -355,18 +355,19 @@ sf_bool STDCALL curl_post_call(SF_CONNECT *sf,
                 }
             }
         }
-        log_debug("before strcmp(query_code, session_invalid)");
         else if (strcmp(query_code, SESSION_TOKEN_INVALID_CODE) == 0) {
+            log_debug("in strcmp(query_code, session_invalid)");
             SET_SNOWFLAKE_ERROR(error, SF_STATUS_ERROR_CONNECTION_NOT_EXIST,
                                 ERR_MSG_SESSION_TOKEN_INVALID, SF_SQLSTATE_CONNECTION_NOT_EXIST);
             break;
         }
-        log_debug("before strcmp(query_code, session_gone)");
         else if (strcmp(query_code, GONE_SESSION_CODE) == 0) {
+            log_debug("in strcmp(query_code, session_gone)");
             SET_SNOWFLAKE_ERROR(error, SF_STATUS_ERROR_CONNECTION_NOT_EXIST,
                                 ERR_MSG_GONE_SESSION, SF_SQLSTATE_CONNECTION_NOT_EXIST);
             break;
         }
+        log_debug("made it through session strcmp if/else tree");
 
         while (strcmp(query_code, QUERY_IN_PROGRESS_CODE) == 0 ||
                strcmp(query_code, QUERY_IN_PROGRESS_ASYNC_CODE) == 0) {
