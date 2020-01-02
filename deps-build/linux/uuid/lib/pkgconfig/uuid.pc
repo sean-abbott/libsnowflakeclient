@@ -1,0 +1,11 @@
+prefix=/tmp/libsnowflakeclient/scripts/../deps-build/linux/uuid
+exec_prefix=/tmp/libsnowflakeclient/scripts/../deps-build/linux/uuid
+libdir=/tmp/libsnowflakeclient/scripts/../deps-build/linux/uuid/lib
+includedir=/tmp/libsnowflakeclient/scripts/../deps-build/linux/uuid/include
+
+Name: uuid
+Description: Universally unique id library
+Version: UNKNOWN..0
+Requires:
+Cflags: -I${includedir}/uuid
+Libs: -L${libdir} -luuid
