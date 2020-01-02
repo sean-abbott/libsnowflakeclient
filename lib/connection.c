@@ -844,6 +844,7 @@ sf_bool STDCALL request(SF_CONNECT *sf,
     CURL *curl = NULL;
     char *encoded_url = NULL;
     SF_HEADER *my_header = NULL;
+    log_debug("before curl easy init");
     curl = curl_easy_init();
     if (curl) {
         // Use passed in header if one exists
@@ -859,6 +860,7 @@ sf_bool STDCALL request(SF_CONNECT *sf,
             }
         }
 
+        log_debug("before encode_url");
         encoded_url = encode_url(curl, sf->protocol, sf->account, sf->host,
                                  sf->port, url, url_params, num_url_params,
                                  error, sf->directURL_param);
@@ -867,6 +869,7 @@ sf_bool STDCALL request(SF_CONNECT *sf,
         }
 
         // Execute request and set return value to result
+        log_debug("before curl_post_call");
         if (request_type == POST_REQUEST_TYPE) {
             ret = curl_post_call(sf, curl, encoded_url, my_header, body, json,
                                  error);
@@ -879,6 +882,7 @@ sf_bool STDCALL request(SF_CONNECT *sf,
             goto cleanup;
         }
     }
+    log_debug("finished request call");
 
 cleanup:
     // If we created our own header, then delete it
