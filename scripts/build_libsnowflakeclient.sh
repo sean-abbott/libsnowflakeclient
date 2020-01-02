@@ -2,6 +2,7 @@
 #
 # Build Snowflake Client library
 #
+set -x
 function usage() {
     echo "Usage: `basename $0` [-p]"
     echo "-p                 : Rebuild Snowflake Client with profile option. default: no profile"

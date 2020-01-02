@@ -10,8 +10,10 @@ function usage() {
 }
 set -o pipefail
 
-export CC="/usr/lib64/ccache/gcc52 -g"
-export CXX="/usr/lib64/ccache/g++52 -g"
+#export CC="/usr/lib64/ccache/gcc52 -g"
+#export CXX="/usr/lib64/ccache/g++52 -g"
+export CC="$(which gcc) -g"
+export CXX="$(which g++) -g"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $DIR/_init.sh $@
