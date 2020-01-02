@@ -869,13 +869,16 @@ sf_bool STDCALL request(SF_CONNECT *sf,
         }
 
         // Execute request and set return value to result
-        log_debug("before curl_post_call");
+        log_debug("before curl function if tree");
         if (request_type == POST_REQUEST_TYPE) {
+            log_debug("curl post_request_type before curl_post_call");
             ret = curl_post_call(sf, curl, encoded_url, my_header, body, json,
                                  error);
         } else if (request_type == GET_REQUEST_TYPE) {
+            log_debug("curl get_request_type before curl_get_call");
             ret = curl_get_call(sf, curl, encoded_url, my_header, json, error);
         } else {
+            log_debug("unknown request type before cleanup");
             SET_SNOWFLAKE_ERROR(error, SF_STATUS_ERROR_BAD_REQUEST,
                                 "An unknown request type was passed to the request function",
                                 SF_SQLSTATE_UNABLE_TO_CONNECT);
