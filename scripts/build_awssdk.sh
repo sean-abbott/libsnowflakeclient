@@ -34,7 +34,7 @@ aws_configure_opts+=(
     "-DOPENSSL_ROOT_DIR=$DEPENDENCY_DIR/openssl"
     "-DOPENSSL_USE_STATIC_LIBS=true"
     "-DCURL_INCLUDE_DIR=$DEPENDENCY_DIR/curl/include"
-    "-DCURL_LIBRARY=$DEPENDENCY_DIR/curl/lib"
+    "-DCURL_LIBRARY=$DEPENDENCY_DIR/curl/lib/libcurl.a"
 )
 
 ADDITIONAL_CXXFLAGS=
